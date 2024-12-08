@@ -1,29 +1,33 @@
-import React from 'react';
-import { Trash2 } from 'lucide-react';
-import { CategoryList } from './components/CategoryList';
-import { packingCategories } from './data/packingList';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { CheckedItems } from './types';
-import { Logo } from './components/Logo';
-import { SyncStatus } from './components/SyncStatus';
+import React from "react";
+import { Trash2 } from "lucide-react";
+import { CategoryList } from "./components/CategoryList";
+import { packingCategories } from "./data/packingList";
+import { useLocalStorage } from "./hooks/useLocalStorage";
+import { CheckedItems } from "./types";
+import { Logo } from "./components/Logo";
+import { SyncStatus } from "./components/SyncStatus";
 
 function App() {
-  const [checkedItems, setCheckedItems, { lastSynced, error }] = useLocalStorage<CheckedItems>('packing-list-checked', {});
+  const [checkedItems, setCheckedItems, { lastSynced, error }] =
+    useLocalStorage<CheckedItems>("packing-list-checked", {});
 
   const handleToggleItem = (itemId: string) => {
     setCheckedItems((prev) => ({
       ...prev,
-      [itemId]: !prev[itemId]
+      [itemId]: !prev[itemId],
     }));
   };
 
   const handleReset = () => {
-    if (window.confirm('¿Estás seguro que querés reiniciar la lista?')) {
+    if (window.confirm("¿Estás seguro que querés reiniciar la lista?")) {
       setCheckedItems({});
     }
   };
 
-  const totalItems = packingCategories.reduce((sum, category) => sum + category.items.length, 0);
+  const totalItems = packingCategories.reduce(
+    (sum, category) => sum + category.items.length,
+    0
+  );
   const checkedCount = Object.values(checkedItems).filter(Boolean).length;
   const totalProgress = (checkedCount / totalItems) * 100;
 
@@ -40,21 +44,23 @@ function App() {
               <SyncStatus lastSynced={lastSynced} error={error} />
               <button
                 onClick={handleReset}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-dark rounded-lg hover:bg-primary-dark/90 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-primary-dark rounded-lg hover:bg-primary-dark/90 transition-colors text-sm sm:px-3 sm:py-1"
               >
                 <Trash2 className="w-4 h-4" />
-                <span>Reiniciar</span>
+                <span className="hidden sm:inline">Reiniciar</span>
               </button>
             </div>
           </div>
-          
+
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-1">
-              <span>{checkedCount} de {totalItems} items completados</span>
+              <span>
+                {checkedCount} de {totalItems} items completados
+              </span>
               <span>{Math.round(totalProgress)}%</span>
             </div>
             <div className="w-full h-2 bg-primary-dark rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-secondary transition-all duration-500 ease-out"
                 style={{ width: `${totalProgress}%` }}
               />
@@ -67,7 +73,7 @@ function App() {
         <div className="bg-white rounded-xl shadow-md p-6 mb-6 border-l-4 border-primary">
           <p className="text-primary font-medium flex items-center gap-2">
             <span>⚠️</span>
-            Importante: No usar elementos de vidrio o plástico frágiles
+            Importante: No llevar elementos de vidrio o plástico frágiles
           </p>
         </div>
 
