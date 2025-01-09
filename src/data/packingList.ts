@@ -6,7 +6,8 @@ export const packingCategories: PackingCategory[] = [
     items: [
       'Mochila anatómica',
       'Cuello polar',
-      'Gorro para el sol / Buff',
+      'Gorro para el sol',
+      'Buff',
       'Gorro de polar',
       'Lentes de sol',
       'Campera rompevientos',
