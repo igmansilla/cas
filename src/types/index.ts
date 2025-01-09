@@ -1,6 +1,7 @@
 export interface PackingCategory {
-  title: string;
-  items: string[];
+  id: string; // Identificador único de la categoría
+  title: string; // Título de la categoría
+  items: { id: string; text: string }[]; // Ítems con IDs únicos
 }
 
 export interface CheckedItems {

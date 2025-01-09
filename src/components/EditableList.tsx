@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
-import { Plus, Pencil, Trash2, Check, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { Draggable, Droppable } from '@hello-pangea/dnd';
-import { PackingCategory } from '../types';
+import React, { useState } from "react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { Draggable, Droppable } from "@hello-pangea/dnd";
+import { PackingCategory } from "../types";
 
 interface EditableListProps {
   category: PackingCategory;
@@ -9,8 +17,8 @@ interface EditableListProps {
   onUpdateCategory: (newTitle: string) => void;
   onDeleteCategory: () => void;
   onAddItem: (item: string) => void;
-  onEditItem: (index: number, newText: string) => void;
-  onDeleteItem: (index: number) => void;
+  onEditItem: (id: string, newText: string) => void;
+  onDeleteItem: (id: string) => void;
 }
 
 export function EditableList({
@@ -24,9 +32,9 @@ export function EditableList({
 }: EditableListProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(category.title);
-  const [newItem, setNewItem] = useState('');
-  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
-  const [editingItemText, setEditingItemText] = useState('');
+  const [newItem, setNewItem] = useState("");
+  const [editingItemIndex, setEditingItemIndex] = useState<string | null>(null);
+  const [editingItemText, setEditingItemText] = useState("");
   const [isExpanded, setIsExpanded] = useState(true);
 
   const handleSubmitTitle = (e: React.FormEvent) => {
@@ -41,20 +49,22 @@ export function EditableList({
     e.preventDefault();
     if (newItem.trim()) {
       onAddItem(newItem.trim());
-      setNewItem('');
+      setNewItem("");
     }
   };
 
-  const handleEditItem = (index: number) => {
-    setEditingItemIndex(index);
-    setEditingItemText(category.items[index]);
+  const handleEditItem = (id: string) => {
+    const itemToEdit = category.items.find((item) => item.id === id);
+    if (itemToEdit) {
+      setEditingItemIndex(id); // Guarda el ID del ítem que se está editando
+      setEditingItemText(itemToEdit.text); // Establece el texto actual del ítem
+    }
   };
-
-  const handleSaveItem = (index: number) => {
+  const handleSaveItem = (id: string) => {
     if (editingItemText.trim()) {
-      onEditItem(index, editingItemText.trim());
+      onEditItem(id, editingItemText.trim());
       setEditingItemIndex(null);
-      setEditingItemText('');
+      setEditingItemText("");
     }
   };
 
@@ -107,7 +117,9 @@ export function EditableList({
                       <ChevronUp className="w-5 h-5" />
                     )}
                   </button>
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800">{category.title}</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+                    {category.title}
+                  </h2>
                 </div>
               )}
             </div>
@@ -133,7 +145,10 @@ export function EditableList({
 
           {isExpanded && (
             <>
-              <form onSubmit={handleAddItem} className="mb-4 flex flex-col sm:flex-row gap-2">
+              <form
+                onSubmit={handleAddItem}
+                className="mb-4 flex flex-col sm:flex-row gap-2"
+              >
                 <input
                   type="text"
                   value={newItem}
@@ -150,18 +165,23 @@ export function EditableList({
                 </button>
               </form>
 
-              <Droppable droppableId={`items-${category.title}`} type={`items-${category.title}`}>
+              <Droppable
+                droppableId={`items-${category.title}`}
+                type={`items-${category.title}`}
+              >
                 {(provided) => (
                   <ul
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className="space-y-2"
                   >
-                    {category.items.map((item, index) => (
+                    {category.items.map((item) => (
                       <Draggable
-                        key={`${category.title}-${item}-${index}`}
-                        draggableId={`${category.title}-${item}-${index}`}
-                        index={index}
+                        key={item.id}
+                        draggableId={item.id}
+                        index={category.items.findIndex(
+                          (i) => i.id === item.id
+                        )} // Si necesitas el índice para Draggable
                       >
                         {(provided) => (
                           <li
@@ -170,18 +190,20 @@ export function EditableList({
                             {...provided.dragHandleProps}
                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-gray-100 transition-all duration-200"
                           >
-                            {editingItemIndex === index ? (
+                            {editingItemIndex === item.id ? (
                               <div className="flex-1 flex flex-col sm:flex-row gap-2">
                                 <input
                                   type="text"
                                   value={editingItemText}
-                                  onChange={(e) => setEditingItemText(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditingItemText(e.target.value)
+                                  }
                                   className="flex-1 px-3 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                                   autoFocus
                                 />
                                 <div className="flex gap-2">
                                   <button
-                                    onClick={() => handleSaveItem(index)}
+                                    onClick={() => handleSaveItem(item.id)}
                                     className="flex-1 sm:flex-none p-2 text-white bg-secondary rounded-lg hover:bg-secondary-dark transition-colors"
                                   >
                                     <Check className="w-5 h-5" />
@@ -196,16 +218,18 @@ export function EditableList({
                               </div>
                             ) : (
                               <>
-                                <span className="text-sm sm:text-base text-gray-700">{item}</span>
+                                <span className="text-sm sm:text-base text-gray-700">
+                                  {item.text}
+                                </span>
                                 <div className="flex gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
-                                    onClick={() => handleEditItem(index)}
+                                    onClick={() => handleEditItem(item.id)}
                                     className="p-2 text-gray-600 hover:text-primary transition-colors"
                                   >
                                     <Pencil className="w-4 h-4" />
                                   </button>
                                   <button
-                                    onClick={() => onDeleteItem(index)}
+                                    onClick={() => onDeleteItem(item.id)}
                                     className="p-2 text-gray-600 hover:text-primary transition-colors"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -217,6 +241,7 @@ export function EditableList({
                         )}
                       </Draggable>
                     ))}
+
                     {provided.placeholder}
                   </ul>
                 )}

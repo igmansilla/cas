@@ -1,15 +1,16 @@
-import React from 'react';
-import { Trash2, Plus } from 'lucide-react';
-import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
-import { CategoryList } from './components/CategoryList';
-import { usePackingLists } from './hooks/usePackingLists';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { CheckedItems } from './types';
-import { Logo } from './components/Logo';
-import { SyncStatus } from './components/SyncStatus';
+import React from "react";
+import { Trash2, Plus } from "lucide-react";
+import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
+import { CategoryList } from "./components/CategoryList";
+import { usePackingLists } from "./hooks/usePackingLists";
+import { useLocalStorage } from "./hooks/useLocalStorage";
+import { CheckedItems } from "./types";
+import { Logo } from "./components/Logo";
+import { SyncStatus } from "./components/SyncStatus";
 
 function App() {
-  const [checkedItems, setCheckedItems, { lastSynced, error }] = useLocalStorage<CheckedItems>('packing-list-checked', {});
+  const [checkedItems, setCheckedItems, { lastSynced, error }] =
+    useLocalStorage<CheckedItems>("packing-list-checked", {});
   const {
     categories,
     addCategory,
@@ -25,40 +26,52 @@ function App() {
   const handleToggleItem = (itemId: string) => {
     setCheckedItems((prev) => ({
       ...prev,
-      [itemId]: !prev[itemId]
+      [itemId]: !prev[itemId],
     }));
   };
 
   const handleReset = () => {
-    if (window.confirm('¿Estás seguro que querés reiniciar la lista?')) {
+    if (window.confirm("¿Estás seguro que querés reiniciar la lista?")) {
       setCheckedItems({});
     }
   };
 
   const handleAddCategory = () => {
     const title = 'Nueva Categoría';
-    addCategory(title);
+    addCategory({
+      id: `${Date.now()}`, // Genera un ID único
+      title,
+      items: [] as { id: string; text: string }[], // Especifica el tipo del array
+    });
   };
+  
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
     const { source, destination, type } = result;
 
-    if (type === 'category') {
+    if (type === "category") {
       reorderCategories(source.index, destination.index);
     } else {
       const categoryId = result.type;
-      const categoryIndex = categories.findIndex(cat => `items-${cat.title}` === categoryId);
-      if (categoryIndex !== -1) {
+      const category = categories.find(
+        (cat) => `items-${cat.title}` === categoryId
+      );
+
+      if (category) {
+        const categoryIndex = categories.findIndex(
+          (cat) => cat.title === category.title
+        );
         reorderItems(categoryIndex, source.index, destination.index);
       }
     }
   };
 
   const totalItems = categories.reduce((sum, category) => sum + category.items.length, 0);
-  const checkedCount = Object.values(checkedItems).filter(Boolean).length;
-  const totalProgress = (checkedCount / totalItems) * 100;
+  const checkedCount = Object.keys(checkedItems).filter((key) => checkedItems[key]).length;
+  const totalProgress = totalItems > 0 ? (checkedCount / totalItems) * 100 : 0;
+  
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
@@ -68,7 +81,9 @@ function App() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Logo />
-                <h1 className="text-lg sm:text-2xl font-bold">Lista de Equipamiento</h1>
+                <h1 className="text-lg sm:text-2xl font-bold">
+                  Lista de Equipamiento
+                </h1>
               </div>
               <div className="flex items-center gap-4">
                 <SyncStatus lastSynced={lastSynced} error={error} />
@@ -81,14 +96,16 @@ function App() {
                 </button>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <div className="flex justify-between text-sm mb-1">
-                <span>{checkedCount} de {totalItems} items completados</span>
+                <span>
+                  {checkedCount} de {totalItems} items completados
+                </span>
                 <span>{Math.round(totalProgress)}%</span>
               </div>
               <div className="w-full h-2 bg-primary-dark rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-secondary transition-all duration-500 ease-out"
                   style={{ width: `${totalProgress}%` }}
                 />
@@ -114,18 +131,23 @@ function App() {
               >
                 {categories.map((category, index) => (
                   <CategoryList
-                    key={category.title}
+                    key={category.id}
                     index={index}
                     category={category}
                     checkedItems={checkedItems}
                     onToggleItem={handleToggleItem}
-                    onUpdateCategory={(newTitle) => editCategory(index, newTitle)}
-                    onDeleteCategory={() => deleteCategory(index)}
-                    onAddItem={(item) => addItem(index, item)}
-                    onEditItem={(itemIndex, newText) => editItem(index, itemIndex, newText)}
-                    onDeleteItem={(itemIndex) => deleteItem(index, itemIndex)}
+                    onUpdateCategory={(newTitle) =>
+                      editCategory(category.id, newTitle)
+                    }
+                    onDeleteCategory={() => deleteCategory(category.id)}
+                    onAddItem={(item) => addItem(category.id, item)}
+                    onEditItem={(itemId, newText) =>
+                      editItem(category.id, itemId, newText)
+                    }
+                    onDeleteItem={(itemId) => deleteItem(category.id, itemId)}
                   />
                 ))}
+
                 {provided.placeholder}
               </div>
             )}
