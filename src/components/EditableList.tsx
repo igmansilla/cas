@@ -56,8 +56,8 @@ export function EditableList({
   const handleEditItem = (id: string) => {
     const itemToEdit = category.items.find((item) => item.id === id);
     if (itemToEdit) {
-      setEditingItemIndex(id); // Guarda el ID del ítem que se está editando
-      setEditingItemText(itemToEdit.text); // Establece el texto actual del ítem
+      setEditingItemIndex(id); 
+      setEditingItemText(itemToEdit.text);
     }
   };
   const handleSaveItem = (id: string) => {

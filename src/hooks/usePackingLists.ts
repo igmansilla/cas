@@ -12,6 +12,10 @@ export function usePackingLists() {
     setCategories((prev) => [newCategory, ...prev]);
   };
 
+  const resetCategories = () => {
+    setCategories(defaultCategories); // Restaura las categorías al estado predeterminado
+  };
+  
   const editCategory = (id: string, newTitle: string) => {
     setCategories((prev) =>
       prev.map((cat) => (cat.id === id ? { ...cat, title: newTitle } : cat))
@@ -97,5 +101,6 @@ export function usePackingLists() {
     deleteItem,
     reorderCategories,
     reorderItems,
+    resetCategories
   };
 }

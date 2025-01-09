@@ -21,6 +21,7 @@ function App() {
     deleteItem,
     reorderCategories,
     reorderItems,
+    resetCategories
   } = usePackingLists();
 
   const handleToggleItem = (itemId: string) => {
@@ -32,9 +33,11 @@ function App() {
 
   const handleReset = () => {
     if (window.confirm("¿Estás seguro que querés reiniciar la lista?")) {
-      setCheckedItems({});
+      setCheckedItems({}); // Limpia los checkeds
+      resetCategories(); // Restaura las categorías a las predeterminadas
     }
   };
+  
 
   const handleAddCategory = () => {
     const title = 'Nueva Categoría';
