@@ -1,28 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Menu as MenuIcon, X as XIcon } from 'lucide-react'; // For hamburger and close icons
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
   return (
-    <div className="flex h-screen bg-gray-100"> {/* Added bg-gray-100 for overall page background */}
+    <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-gray-800 text-white p-5 space-y-4"> {/* Styled sidebar: darker, white text, padding, spacing */}
-        <h2 className="text-2xl font-semibold mb-6">Navigation</h2> {/* Changed title */}
-        
-        <nav className="space-y-2"> {/* Added spacing for nav items */}
+      {/* Mobile: fixed, overlay, hidden by default, toggled by state */}
+      {/* Desktop: static, part of flex layout */}
+      <div
+        data-testid="sidebar" // Added data-testid for easier selection
+        className={`
+          fixed inset-y-0 left-0 z-30 w-64 bg-gray-800 text-white p-5 space-y-4
+          transform transition-transform ease-in-out duration-300
+          ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:static md:translate-x-0 md:flex md:flex-col md:flex-shrink-0
+        `}
+      >
+        {/* Sidebar content from previous version */}
+        <h2 className="text-2xl font-semibold mb-6">Navigation</h2>
+        <nav className="space-y-2">
           {/* Active Link for Packing List */}
-          <div className="block px-4 py-2.5 bg-gray-700 rounded-lg shadow"> {/* Styling for active link */}
+          <div className="block px-4 py-2.5 bg-gray-700 rounded-lg shadow">
             <span className="font-medium">Packing List</span>
           </div>
-
           {/* Placeholder for Future Features */}
-          <div className="px-4 py-2 mt-6"> {/* Margin top for separation */}
+          <div className="px-4 py-2 mt-6">
             <span className="text-xs font-semibold text-gray-400 uppercase">Future Features</span>
           </div>
-          
-          <div className="block px-4 py-2.5 text-gray-400 cursor-not-allowed"> {/* Styling for disabled/placeholder link */}
+          <div className="block px-4 py-2.5 text-gray-400 cursor-not-allowed">
             <span>Campers Management</span>
           </div>
           <div className="block px-4 py-2.5 text-gray-400 cursor-not-allowed">
@@ -34,10 +45,34 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </nav>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 p-6 overflow-y-auto"> {/* Added more padding to content area */}
-        {children}
+      {/* Content Area & Mobile Toggle Button */}
+      <div className="flex-1 flex flex-col overflow-hidden"> {/* Added flex-col for potential header/button bar */}
+        {/* Mobile Header/Toggle Area */}
+        <div className="md:hidden p-4 bg-gray-700 text-white flex justify-between items-center shadow-md"> {/* Example mobile header bar */}
+          <button
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="p-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            aria-label="Toggle sidebar"
+          >
+            {isMobileSidebarOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
+          </button>
+          <span className="text-xl font-bold">App Title</span> {/* Optional: Title in mobile header */}
+        </div>
+        
+        {/* Main Content */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          {children}
+        </main>
       </div>
+      
+      {/* Optional: Overlay for mobile when sidebar is open */}
+      {isMobileSidebarOpen && (
+        <div
+          data-testid="mobile-overlay" // Added data-testid for easier selection
+          className="fixed inset-0 z-20 bg-black opacity-50 md:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        ></div>
+      )}
     </div>
   );
 };
