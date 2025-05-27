@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom'; // Import NavLink
 import { Menu as MenuIcon, X as XIcon } from 'lucide-react'; // For hamburger and close icons
 
 interface MainLayoutProps {
@@ -25,23 +26,50 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Sidebar content from previous version */}
         <h2 className="text-2xl font-semibold mb-6">Navigation</h2>
         <nav className="space-y-2">
-          {/* Active Link for Packing List */}
-          <div className="block px-4 py-2.5 bg-primary-dark rounded-lg shadow">
-            <span className="font-medium">Packing List</span>
-          </div>
+          <NavLink
+            to="/equipo"
+            className={({ isActive }) =>
+              `block px-4 py-2.5 rounded-lg shadow-sm transition-colors duration-150 ease-in-out ${
+                isActive ? 'bg-primary-dark text-white font-medium' : 'text-gray-300 hover:bg-primary-dark hover:text-white'
+              }`
+            }
+          >
+            Lista de Equipo
+          </NavLink>
           {/* Placeholder for Future Features */}
           <div className="px-4 py-2 mt-6">
             <span className="text-xs font-semibold text-gray-300 uppercase">Future Features</span>
           </div>
-          <div className="block px-4 py-2.5 text-gray-300 cursor-not-allowed">
-            <span>Campers Management</span>
-          </div>
-          <div className="block px-4 py-2.5 text-gray-300 cursor-not-allowed">
-            <span>Event Schedule</span>
-          </div>
-          <div className="block px-4 py-2.5 text-gray-300 cursor-not-allowed">
-            <span>Group Chat</span>
-          </div>
+          <NavLink
+            to="/acampantes"
+            className={({ isActive }) =>
+              `block px-4 py-2.5 rounded-lg shadow-sm transition-colors duration-150 ease-in-out ${
+                isActive ? 'bg-primary-dark text-white font-medium' : 'text-gray-300 hover:bg-primary-dark hover:text-white'
+              }`
+            }
+          >
+            Gestión de Acampantes
+          </NavLink>
+          <NavLink
+            to="/eventos"
+            className={({ isActive }) =>
+              `block px-4 py-2.5 rounded-lg shadow-sm transition-colors duration-150 ease-in-out ${
+                isActive ? 'bg-primary-dark text-white font-medium' : 'text-gray-300 hover:bg-primary-dark hover:text-white'
+              }`
+            }
+          >
+            Cronograma de Eventos
+          </NavLink>
+          <NavLink
+            to="/chat"
+            className={({ isActive }) =>
+              `block px-4 py-2.5 rounded-lg shadow-sm transition-colors duration-150 ease-in-out ${
+                isActive ? 'bg-primary-dark text-white font-medium' : 'text-gray-300 hover:bg-primary-dark hover:text-white'
+              }`
+            }
+          >
+            Chat Grupal
+          </NavLink>
         </nav>
       </div>
 
@@ -56,7 +84,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           >
             {isMobileSidebarOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
           </button>
-          <span className="text-xl font-bold">App Title</span> {/* Optional: Title in mobile header */}
+          <span className="text-xl font-bold">CASAPP</span> {/* Optional: Title in mobile header */}
         </div>
         
         {/* Main Content */}
