@@ -16,7 +16,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <div
         data-testid="sidebar" // Added data-testid for easier selection
         className={`
-          fixed inset-y-0 left-0 z-30 w-64 bg-gray-800 text-white p-5 space-y-4
+          fixed inset-y-0 left-0 z-30 w-64 bg-primary text-white p-5 space-y-4
           transform transition-transform ease-in-out duration-300
           ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           md:static md:translate-x-0 md:flex md:flex-col md:flex-shrink-0
@@ -26,20 +26,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <h2 className="text-2xl font-semibold mb-6">Navigation</h2>
         <nav className="space-y-2">
           {/* Active Link for Packing List */}
-          <div className="block px-4 py-2.5 bg-gray-700 rounded-lg shadow">
+          <div className="block px-4 py-2.5 bg-primary-dark rounded-lg shadow">
             <span className="font-medium">Packing List</span>
           </div>
           {/* Placeholder for Future Features */}
           <div className="px-4 py-2 mt-6">
-            <span className="text-xs font-semibold text-gray-400 uppercase">Future Features</span>
+            <span className="text-xs font-semibold text-gray-300 uppercase">Future Features</span>
           </div>
-          <div className="block px-4 py-2.5 text-gray-400 cursor-not-allowed">
+          <div className="block px-4 py-2.5 text-gray-300 cursor-not-allowed">
             <span>Campers Management</span>
           </div>
-          <div className="block px-4 py-2.5 text-gray-400 cursor-not-allowed">
+          <div className="block px-4 py-2.5 text-gray-300 cursor-not-allowed">
             <span>Event Schedule</span>
           </div>
-          <div className="block px-4 py-2.5 text-gray-400 cursor-not-allowed">
+          <div className="block px-4 py-2.5 text-gray-300 cursor-not-allowed">
             <span>Group Chat</span>
           </div>
         </nav>
@@ -48,10 +48,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Content Area & Mobile Toggle Button */}
       <div className="flex-1 flex flex-col overflow-hidden"> {/* Added flex-col for potential header/button bar */}
         {/* Mobile Header/Toggle Area */}
-        <div className="md:hidden p-4 bg-gray-700 text-white flex justify-between items-center shadow-md"> {/* Example mobile header bar */}
+        <div className="md:hidden p-4 bg-primary text-white flex justify-between items-center shadow-md"> {/* Example mobile header bar */}
           <button
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            className="p-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            className="p-2 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
             aria-label="Toggle sidebar"
           >
             {isMobileSidebarOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
