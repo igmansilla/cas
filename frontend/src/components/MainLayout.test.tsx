@@ -40,8 +40,8 @@ Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
 
 // Mock Lucide icons
 vi.mock('lucide-react', () => ({
-    MenuIcon: () => <div>Menu</div>,
-    XIcon: () => <div>X</div>,
+    Menu: () => <div>Menu</div>,
+    X: () => <div>X</div>,
     LogOut: () => <div>LogoutIcon</div>,
 }));
 
