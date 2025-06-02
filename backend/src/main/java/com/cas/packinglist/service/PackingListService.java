@@ -5,6 +5,7 @@ import com.cas.login.repository.UserRepository;
 import com.cas.packinglist.dto.PackingListCategoryDto;
 import com.cas.packinglist.dto.PackingListDto;
 import com.cas.packinglist.dto.PackingListItemDto;
+import com.cas.packinglist.exception.ResourceNotFoundException;
 import com.cas.packinglist.model.PackingList;
 import com.cas.packinglist.model.PackingListCategory;
 import com.cas.packinglist.model.PackingListItem;
@@ -25,13 +26,6 @@ public class PackingListService {
 
     private final PackingListRepository packingListRepository;
     private final UserRepository userRepository; // Assuming this exists
-
-    // Custom exception (example, define it properly elsewhere)
-    static class ResourceNotFoundException extends RuntimeException {
-        public ResourceNotFoundException(String message) {
-            super(message);
-        }
-    }
 
     @Transactional
     public PackingListDto getPackingListForUser(Long userId) {

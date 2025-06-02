@@ -1,6 +1,7 @@
 package com.cas.packinglist.controller;
 
 import com.cas.packinglist.dto.PackingListDto;
+import com.cas.packinglist.exception.ResourceNotFoundException;
 import com.cas.packinglist.service.PackingListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -86,12 +87,11 @@ public class PackingListController {
     }
 
     @GetMapping
-    public ResponseEntity<PackingListDto> getPackingList() {
-        try {
+    public ResponseEntity<PackingListDto> getPackingList() {        try {
             Long userId = getCurrentUserId();
             PackingListDto packingListDto = packingListService.getPackingListForUser(userId);
             return ResponseEntity.ok(packingListDto);
-        } catch (PackingListService.ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             // This case might not be hit if getPackingListForUser returns an empty DTO instead of throwing
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Or an error DTO
         } catch (IllegalStateException e) {
@@ -101,24 +101,21 @@ public class PackingListController {
     }
 
     @PostMapping
-    public ResponseEntity<PackingListDto> savePackingList(@RequestBody PackingListDto packingListDto) {
-        try {
+    public ResponseEntity<PackingListDto> savePackingList(@RequestBody PackingListDto packingListDto) {        try {
             Long userId = getCurrentUserId();
             PackingListDto savedPackingListDto = packingListService.savePackingListForUser(userId, packingListDto);
             return ResponseEntity.ok(savedPackingListDto);
-        } catch (PackingListService.ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             // This exception is thrown by the service if the User entity itself is not found
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Or an error DTO with e.getMessage()
         } catch (IllegalStateException e) {
             // Handle issues getting user ID
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); // Or an error DTO
         }
-    }
-
-    // Optional: Exception handler for ResourceNotFoundException from the service
+    }    // Optional: Exception handler for ResourceNotFoundException from the service
     // This can be defined here or in a @ControllerAdvice class
-    @ExceptionHandler(PackingListService.ResourceNotFoundException.class)
-    public ResponseEntity<String> handleResourceNotFound(PackingListService.ResourceNotFoundException ex) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
