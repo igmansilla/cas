@@ -82,12 +82,13 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/login", "/css/**", "/js/**", "/error", "/").permitAll()
+                    .requestMatchers("/login", "/perform_login", "/css/**", "/js/**", "/error", "/").permitAll() // Allow /perform_login
                     .anyRequest().authenticated() // All other paths require authentication
             )
             .formLogin(formLogin ->
                 formLogin
                     .loginPage("/login")
+                    .loginProcessingUrl("/perform_login") // Explicit login processing URL
                     .successHandler(successHandler()) // Custom success handler
                     .failureHandler(failureHandler()) // Custom failure handler
                     .permitAll()
@@ -100,6 +101,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // Keep CSRF for form login
             )
+            // Add the CookieLoggingFilter after CsrfFilter
+            .addFilterAfter(new CookieLoggingFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
             .authenticationProvider(authenticationProvider());
 
         return http.build();

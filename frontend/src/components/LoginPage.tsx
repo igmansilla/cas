@@ -10,13 +10,16 @@ const LoginPage: React.FC = () => {
     const navigate = useNavigate();
 
     const getCsrfToken = (): string | null => {
+        console.log("Attempting to find XSRF-TOKEN in cookies:", document.cookie);
         const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
             const [name, value] = cookie.trim().split('=');
             if (name === 'XSRF-TOKEN') {
+                console.log("XSRF-TOKEN found:", value);
                 return value;
             }
         }
+        console.log("XSRF-TOKEN not found in cookies.");
         return null;
     };
 
@@ -25,6 +28,7 @@ const LoginPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
+        console.log("All cookies:", document.cookie);
         const csrfToken = getCsrfToken();
         if (!csrfToken) {
             setError('CSRF token not found. Please refresh the page.');
@@ -33,12 +37,15 @@ const LoginPage: React.FC = () => {
         }
 
         try {
-            const response = await fetch('/login', { // Assuming Spring Security's default login processing URL
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-XSRF-TOKEN': csrfToken,
+            };
+            console.log("Request headers to be sent:", headers);
+
+            const response = await fetch('/perform_login', { // Updated to custom login processing URL
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-XSRF-TOKEN': csrfToken,
-                },
+                headers: headers,
                 body: new URLSearchParams({ username, password }),
             });
 
