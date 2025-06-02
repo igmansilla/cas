@@ -1,12 +1,13 @@
 // api.ts - Servicio centralizado de API con estándares de la industria
 
-import type { 
-  ApiResponse, 
-  LoginResponse
+import type {
+  ApiResponse,
+  LoginResponse,
+  PackingListDto, // Import the new DTO
 } from '../types/api';
 
 // Re-export para compatibilidad con código existente
-export type { ApiResponse, LoginResponse };
+export type { ApiResponse, LoginResponse, PackingListDto };
 export interface UserData {
   username: string;
   roles: string[];
@@ -213,6 +214,15 @@ export const api = {
     }),
     delete: (id: number) => apiRequest<unknown>(`/api/dirigentes/${id}`, {
       method: 'DELETE',
+    }),
+  },
+
+  // Packing List
+  packingList: {
+    get: () => apiRequest<PackingListDto>('/api/packing-list'),
+    save: (data: PackingListDto) => apiRequest<PackingListDto>('/api/packing-list', {
+      method: 'POST',
+      body: JSON.stringify(data),
     }),
   },
 
