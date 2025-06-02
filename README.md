@@ -1,78 +1,78 @@
 # listacas
 
-A project with a React frontend and a Java Spring Boot backend.
+Un proyecto con un frontend en React y un backend en Java Spring Boot.
 
 ## Frontend
 
-The frontend is built using:
+El frontend está construido usando:
 - React
 - TypeScript
 - Vite
 - Tailwind CSS
 
-### Development
+### Desarrollo
 
-To run the frontend development server:
+Para ejecutar el servidor de desarrollo del frontend:
 ```bash
 cd frontend
-npm install # If you haven't already
+npm install # Si aún no lo has hecho
 npm run dev
 ```
 
-### Build
+### Compilación (Build)
 
-To build the frontend for production:
+Para compilar el frontend para producción:
 ```bash
 cd frontend
-npm install # If you haven't already
+npm install # Si aún no lo has hecho
 npm run build
 ```
 
 ## Backend
 
-The backend consists of a main Spring Boot application and a separate login service.
+El backend consiste en una aplicación principal Spring Boot y un servicio de login separado.
 
-### Main Backend
+### Backend Principal
 
-The main backend is built using:
+El backend principal está construido usando:
 - Java
 - Spring Boot
 - Gradle
 
-#### Development
+#### Desarrollo
 
-To run the main backend development server:
+Para ejecutar el servidor de desarrollo del backend principal:
 ```bash
 cd backend
 ./gradlew bootRun
 ```
 
-#### Build
+#### Compilación (Build)
 
-To build the main backend:
+Para compilar el backend principal:
 ```bash
 cd backend
 ./gradlew build
 ```
 
-### Login Service
+### Servicio de Login
 
-The login service is located in `backend/login-service` and is built using:
+El servicio de login se encuentra en `backend/login-service` y está construido usando:
 - Java
 - Spring Boot
 - Maven
 
-#### Development
+#### Desarrollo
 
-To run the login service:
+Para ejecutar el servicio de login:
 ```bash
 cd backend/login-service
 ./mvnw spring-boot:run
 ```
 
-#### Build
+#### Compilación (Build)
 
-To build the login service:
+Para compilar el servicio de login:
 ```bash
 cd backend/login-service
 ./mvnw package
