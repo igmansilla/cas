@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import { casColors } from './src/themeColors'; // Adjusted for ES module
+
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
@@ -14,6 +16,10 @@ export default {
           dark: '#E55E15',
           light: '#FF8142',
         },
+        'cas-orange': casColors.orange,
+        'cas-red': casColors.red,
+        'cas-black': casColors.black,
+        'cas-white': casColors.white,
       },
     },
   },
