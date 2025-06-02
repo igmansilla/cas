@@ -25,28 +25,17 @@ Para compilar el backend principal:
 ./gradlew build
 ```
 
-## Servicio de Login
+## Módulo de Login
 
-El servicio de login se encuentra en `backend/login-service`. Está construido usando:
+El módulo de login es una parte integral de la aplicación backend principal y se encuentra dentro del directorio `src/main/java/com/cas/login/`. Este módulo gestiona la autenticación de usuarios, los roles y los permisos.
+
+Para una descripción detallada de su funcionamiento, incluyendo los roles de usuario, la asignación de permisos y la inicialización de datos de ejemplo, por favor consulta el README específico del módulo:
+[Detalles del Módulo de Login](./src/main/java/com/cas/login/README.md)
+
+El backend principal, incluyendo el módulo de login, está construido usando:
 - Java
 - Spring Boot
-- Maven
-
-### Desarrollo
-
-Para ejecutar el servicio de login:
-```bash
-cd login-service
-./mvnw spring-boot:run
-```
-
-### Compilación (Build)
-
-Para compilar el servicio de login:
-```bash
-cd login-service
-./mvnw package
-```
+- Gradle
 
 ## Configuración de la Base de Datos
 
