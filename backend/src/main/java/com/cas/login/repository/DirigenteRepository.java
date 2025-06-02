@@ -1,6 +1,6 @@
-package com.example.login.repository;
+package com.cas.login.repository;
 
-import com.example.login.model.Dirigente;
+import com.cas.login.model.Dirigente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

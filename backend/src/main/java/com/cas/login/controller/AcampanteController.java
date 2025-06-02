@@ -1,7 +1,7 @@
-package com.example.login.controller;
+package com.cas.login.controller;
 
-import com.example.login.model.Acampante;
-import com.example.login.service.AcampanteService;
+import com.cas.login.model.Acampante;
+import com.cas.login.service.AcampanteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

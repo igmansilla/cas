@@ -1,4 +1,4 @@
-package com.example.login.model;
+package com.cas.login.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

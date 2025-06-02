@@ -1,7 +1,7 @@
-package com.example.login.config;
+package com.cas.login.config;
 
 // ... other imports (ensure UserDetailsServiceImpl is imported)
-import com.example.login.service.UserDetailsServiceImpl;
+import com.cas.login.service.UserDetailsServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;

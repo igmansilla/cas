@@ -1,9 +1,9 @@
-package com.example.login;
+package com.cas.login;
 
-import com.example.login.model.Role;
-import com.example.login.model.User;
-import com.example.login.repository.RoleRepository;
-import com.example.login.repository.UserRepository;
+import com.cas.login.model.Role;
+import com.cas.login.model.User;
+import com.cas.login.repository.RoleRepository;
+import com.cas.login.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
