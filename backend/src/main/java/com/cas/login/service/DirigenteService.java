@@ -6,6 +6,7 @@ import com.cas.login.model.User;
 import com.cas.login.repository.DirigenteRepository;
 import com.cas.login.repository.RoleRepository;
 import com.cas.login.repository.UserRepository; // Needed for user creation
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder; // Needed for encoding password
 import org.springframework.stereotype.Service;
@@ -17,23 +18,13 @@ import java.util.Set;
 import java.util.stream.Collectors; // Required for stream operations if using loop fallback
 
 @Service
+@RequiredArgsConstructor
 public class DirigenteService {
 
     private final DirigenteRepository dirigenteRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public DirigenteService(DirigenteRepository dirigenteRepository,
-                            UserRepository userRepository,
-                            RoleRepository roleRepository,
-                            PasswordEncoder passwordEncoder) {
-        this.dirigenteRepository = dirigenteRepository;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Transactional
     public Dirigente createDirigente(Dirigente dirigente, String rawPassword, Set<String> roleNames) {

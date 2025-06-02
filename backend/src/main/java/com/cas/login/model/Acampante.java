@@ -5,11 +5,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 // Potentially: import jakarta.persistence.ManyToOne;
 // Potentially: import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name = "acampantes")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Acampante {
 
     @Id
@@ -26,26 +32,11 @@ public class Acampante {
     // @JoinColumn(name = "dirigente_responsable_id")
     // private Dirigente dirigenteResponsable;
 
-    // Constructors
-    public Acampante() {
-    }
-
+    // Constructor without id (for creation)
     public Acampante(String nombreCompleto, int edad, String contactoEmergenciaNombre, String contactoEmergenciaTelefono) {
         this.nombreCompleto = nombreCompleto;
         this.edad = edad;
         this.contactoEmergenciaNombre = contactoEmergenciaNombre;
         this.contactoEmergenciaTelefono = contactoEmergenciaTelefono;
     }
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getNombreCompleto() { return nombreCompleto; }
-    public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
-    public int getEdad() { return edad; }
-    public void setEdad(int edad) { this.edad = edad; }
-    public String getContactoEmergenciaNombre() { return contactoEmergenciaNombre; }
-    public void setContactoEmergenciaNombre(String contactoEmergenciaNombre) { this.contactoEmergenciaNombre = contactoEmergenciaNombre; }
-    public String getContactoEmergenciaTelefono() { return contactoEmergenciaTelefono; }
-    public void setContactoEmergenciaTelefono(String contactoEmergenciaTelefono) { this.contactoEmergenciaTelefono = contactoEmergenciaTelefono; }
 }

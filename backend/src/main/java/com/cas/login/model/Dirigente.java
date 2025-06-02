@@ -8,9 +8,15 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "dirigentes")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Dirigente {
 
     @Id
@@ -24,23 +30,10 @@ public class Dirigente {
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private User userAccount;
 
-    // Constructors
-    public Dirigente() {
-    }
-
+    // Constructor without id (for creation)
     public Dirigente(String nombreCompleto, String responsabilidades, User userAccount) {
         this.nombreCompleto = nombreCompleto;
         this.responsabilidades = responsabilidades;
         this.userAccount = userAccount;
     }
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getNombreCompleto() { return nombreCompleto; }
-    public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
-    public String getResponsabilidades() { return responsabilidades; }
-    public void setResponsabilidades(String responsabilidades) { this.responsabilidades = responsabilidades; }
-    public User getUserAccount() { return userAccount; }
-    public void setUserAccount(User userAccount) { this.userAccount = userAccount; }
 }

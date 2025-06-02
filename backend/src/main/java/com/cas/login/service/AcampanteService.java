@@ -2,6 +2,7 @@ package com.cas.login.service;
 
 import com.cas.login.model.Acampante;
 import com.cas.login.repository.AcampanteRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,14 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class AcampanteService {
 
     private final AcampanteRepository acampanteRepository;
-
-    @Autowired
-    public AcampanteService(AcampanteRepository acampanteRepository) {
-        this.acampanteRepository = acampanteRepository;
-    }
 
     @Transactional
     public Acampante createAcampante(Acampante acampante) {

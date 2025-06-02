@@ -2,6 +2,10 @@ package com.cas.login.controller;
 
 import com.cas.login.model.Acampante;
 import com.cas.login.service.AcampanteService;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +16,9 @@ import java.util.List;
 
 // --- DTOs for Acampante ---
 // (Typically in their own files, but here for brevity)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 class AcampanteRequest { // Used for both create and update
     public String nombreCompleto;
     public int edad;
@@ -23,14 +30,10 @@ class AcampanteRequest { // Used for both create and update
 
 @RestController
 @RequestMapping("/api/acampantes")
+@RequiredArgsConstructor
 public class AcampanteController {
 
     private final AcampanteService acampanteService;
-
-    @Autowired
-    public AcampanteController(AcampanteService acampanteService) {
-        this.acampanteService = acampanteService;
-    }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('DIRIGENTE', 'ADMIN')")

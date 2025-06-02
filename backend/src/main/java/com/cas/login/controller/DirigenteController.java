@@ -3,6 +3,10 @@ package com.cas.login.controller;
 import com.cas.login.model.Dirigente;
 import com.cas.login.model.User; // For User in DTO
 import com.cas.login.service.DirigenteService;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +19,9 @@ import java.util.stream.Collectors;
 
 // --- DTOs for Dirigente ---
 // (Typically in their own files, but here for brevity in the subtask)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 class DirigenteCreateRequest {
     public String nombreCompleto;
     public String responsabilidades;
@@ -23,6 +30,9 @@ class DirigenteCreateRequest {
     public Set<String> roles; // e.g., ["ROLE_DIRIGENTE", "ROLE_ADMIN"]
 }
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 class DirigenteResponse {
     public Long id;
     public String nombreCompleto;
@@ -47,6 +57,9 @@ class DirigenteResponse {
     }
 }
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 class DirigenteUpdateRequest {
     public String nombreCompleto;
     public String responsabilidades;
@@ -55,14 +68,10 @@ class DirigenteUpdateRequest {
 
 @RestController
 @RequestMapping("/api/dirigentes")
+@RequiredArgsConstructor
 public class DirigenteController {
 
     private final DirigenteService dirigenteService;
-
-    @Autowired
-    public DirigenteController(DirigenteService dirigenteService) {
-        this.dirigenteService = dirigenteService;
-    }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")

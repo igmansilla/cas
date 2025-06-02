@@ -9,6 +9,7 @@ import com.cas.login.service.DirigenteService; // Using service for Dirigente cr
 // import com.cas.login.service.AcampanteService; // If creating sample Acampantes
 // import com.cas.login.model.Acampante; // If creating sample Acampantes
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +20,7 @@ import java.util.Set;
 import java.util.Arrays; // For Arrays.asList if converting to Set easily
 
 @Component
+@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -26,19 +28,6 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final DirigenteService dirigenteService;
     // private final AcampanteService acampanteService; // Optional: if creating sample acampantes
-
-    @Autowired
-    public DataInitializer(UserRepository userRepository,
-                           RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder,
-                           DirigenteService dirigenteService
-                           /* AcampanteService acampanteService */) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.dirigenteService = dirigenteService;
-        // this.acampanteService = acampanteService;
-    }
 
     @Override
     @Transactional // It's good practice for data initialization involving multiple repository calls
