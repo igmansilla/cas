@@ -48,13 +48,13 @@ cd login-service
 ./mvnw package
 ```
 
-## Database Setup
+## Configuración de la Base de Datos
 
-This project uses a PostgreSQL database running in a Docker container.
+Este proyecto usa una base de datos **PostgreSQL** que corre en un contenedor Docker.
 
-To start the database:
-1. Make sure you have Docker and Docker Compose installed.
-2. Navigate to the `backend` directory in your terminal.
-3. Run the command: `docker-compose up -d`
+Para iniciar la base de datos:
+1.  Asegúrate de tener **Docker** y **Docker Compose** instalados.
+2.  Navega al directorio `backend` en tu terminal.
+3.  Ejecuta el comando: `docker-compose up -d`
 
-This will start the PostgreSQL container in detached mode. The database will be accessible on `localhost:5432` with the username `myuser`, password `mypassword`, and database name `mydatabase`, as configured in `docker-compose.yml` and `application.properties`.
+Esto iniciará el contenedor de PostgreSQL en modo *detached*. La base de datos será accesible en `localhost:5432` con el usuario `myuser`, la contraseña `mypassword` y el nombre de la base de datos `mydatabase`, tal como está configurado en `docker-compose.yml` y `application.properties`.
