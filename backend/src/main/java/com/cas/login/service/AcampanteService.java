@@ -1,7 +1,7 @@
-package com.example.login.service;
+package com.cas.login.service;
 
-import com.example.login.model.Acampante;
-import com.example.login.repository.AcampanteRepository;
+import com.cas.login.model.Acampante;
+import com.cas.login.repository.AcampanteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

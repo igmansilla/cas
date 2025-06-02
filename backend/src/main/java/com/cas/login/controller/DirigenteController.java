@@ -1,8 +1,8 @@
-package com.example.login.controller;
+package com.cas.login.controller;
 
-import com.example.login.model.Dirigente;
-import com.example.login.model.User; // For User in DTO
-import com.example.login.service.DirigenteService;
+import com.cas.login.model.Dirigente;
+import com.cas.login.model.User; // For User in DTO
+import com.cas.login.service.DirigenteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

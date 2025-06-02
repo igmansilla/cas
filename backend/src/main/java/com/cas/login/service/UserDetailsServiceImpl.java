@@ -1,7 +1,7 @@
-package com.example.login.service;
+package com.cas.login.service;
 
-import com.example.login.model.User;
-import com.example.login.repository.UserRepository;
+import com.cas.login.model.User;
+import com.cas.login.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

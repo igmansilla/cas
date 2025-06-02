@@ -1,11 +1,11 @@
-package com.example.login.service;
+package com.cas.login.service;
 
-import com.example.login.model.Dirigente;
-import com.example.login.model.Role;
-import com.example.login.model.User;
-import com.example.login.repository.DirigenteRepository;
-import com.example.login.repository.RoleRepository;
-import com.example.login.repository.UserRepository; // Needed for user creation
+import com.cas.login.model.Dirigente;
+import com.cas.login.model.Role;
+import com.cas.login.model.User;
+import com.cas.login.repository.DirigenteRepository;
+import com.cas.login.repository.RoleRepository;
+import com.cas.login.repository.UserRepository; // Needed for user creation
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder; // Needed for encoding password
 import org.springframework.stereotype.Service;

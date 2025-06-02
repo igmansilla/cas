@@ -1,13 +1,13 @@
-package com.example.login;
+package com.cas.login;
 
-import com.example.login.model.Dirigente;
-import com.example.login.model.Role;
-import com.example.login.model.User;
-import com.example.login.repository.RoleRepository;
-import com.example.login.repository.UserRepository;
-import com.example.login.service.DirigenteService; // Using service for Dirigente creation
-// import com.example.login.service.AcampanteService; // If creating sample Acampantes
-// import com.example.login.model.Acampante; // If creating sample Acampantes
+import com.cas.login.model.Dirigente;
+import com.cas.login.model.Role;
+import com.cas.login.model.User;
+import com.cas.login.repository.RoleRepository;
+import com.cas.login.repository.UserRepository;
+import com.cas.login.service.DirigenteService; // Using service for Dirigente creation
+// import com.cas.login.service.AcampanteService; // If creating sample Acampantes
+// import com.cas.login.model.Acampante; // If creating sample Acampantes
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

@@ -1,4 +1,4 @@
-package com.example.login.controller;
+package com.cas.login.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
