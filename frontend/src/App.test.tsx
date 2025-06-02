@@ -40,7 +40,34 @@ vi.mock('lucide-react', async (importOriginal) => {
   };
 });
 
+// Mock localStorage
+const mockLocalStorage = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
+
 describe('App Routing and Integration', () => {
+  beforeEach(() => {
+    // Set up a fake user in localStorage for authenticated tests
+    mockLocalStorage.setItem('user', JSON.stringify({ username: 'testuser', roles: ['ROLE_USER'] }));
+  });
+
+  afterEach(() => {
+    mockLocalStorage.clear();
+  });
+
   const renderAppWithRouter = (initialEntries = ['/']) => {
     return render(
       <MemoryRouter initialEntries={initialEntries}>
@@ -70,17 +97,10 @@ describe('App Routing and Integration', () => {
     // MainLayout should still be there
     expect(screen.getByRole('link', { name: /Gestión de Acampantes/i })).toBeInTheDocument();
   });
-
   it('renders CronogramaEventosPage for /eventos route', () => {
     renderAppWithRouter(['/eventos']);
     expect(screen.getByText('Página de Cronograma de Eventos')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Cronograma de Eventos/i })).toBeInTheDocument();
-  });
-
-  it('renders ChatGrupalPage for /chat route', () => {
-    renderAppWithRouter(['/chat']);
-    expect(screen.getByText('Página de Chat Grupal')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Chat Grupal/i })).toBeInTheDocument();
   });
 
   it('navigates to different pages when links in MainLayout are clicked', () => {
@@ -96,24 +116,16 @@ describe('App Routing and Integration', () => {
     // Check if GestionAcampantesPage content is rendered
     expect(screen.getByText('Página de Gestión de Acampantes')).toBeInTheDocument();
     // Check that PackingListApp content is gone
-    expect(screen.queryByText('Lista de Equipamiento')).not.toBeInTheDocument(); 
-
-    // Click on "Cronograma de Eventos" link
+    expect(screen.queryByText('Lista de Equipamiento')).not.toBeInTheDocument();     // Click on "Cronograma de Eventos" link
     const eventosLink = screen.getByRole('link', { name: /Cronograma de Eventos/i });
     fireEvent.click(eventosLink);
     expect(screen.getByText('Página de Cronograma de Eventos')).toBeInTheDocument();
     expect(screen.queryByText('Página de Gestión de Acampantes')).not.toBeInTheDocument();
 
-    // Click on "Chat Grupal" link
-    const chatLink = screen.getByRole('link', { name: /Chat Grupal/i });
-    fireEvent.click(chatLink);
-    expect(screen.getByText('Página de Chat Grupal')).toBeInTheDocument();
-    expect(screen.queryByText('Página de Cronograma de Eventos')).not.toBeInTheDocument();
-
     // Navigate back to "Lista de Equipo"
     const equipoLink = screen.getByRole('link', { name: /Lista de Equipo/i });
     fireEvent.click(equipoLink);
     expect(screen.getByText('Lista de Equipamiento')).toBeInTheDocument();
-    expect(screen.queryByText('Página de Chat Grupal')).not.toBeInTheDocument();
+    expect(screen.queryByText('Página de Cronograma de Eventos')).not.toBeInTheDocument();
   });
 });

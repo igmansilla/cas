@@ -1,6 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Logo } from './Logo'; // Import the Logo component
+import { Logo } from './Logo';
+import { api, ApiError } from '../services/api';
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState<string>('');
@@ -9,64 +10,27 @@ const LoginPage: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    const getCsrfToken = (): string | null => {
-        console.log("Attempting to find XSRF-TOKEN in cookies:", document.cookie);
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'XSRF-TOKEN') {
-                console.log("XSRF-TOKEN found:", value);
-                return value;
-            }
-        }
-        console.log("XSRF-TOKEN not found in cookies.");
-        return null;
-    };
-
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setLoading(true);
         setError(null);
 
-        console.log("All cookies:", document.cookie);
-        const csrfToken = getCsrfToken();
-        if (!csrfToken) {
-            setError('CSRF token not found. Please refresh the page.');
-            setLoading(false);
-            return;
-        }
-
         try {
-            const headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-XSRF-TOKEN': csrfToken,
-            };
-            console.log("Request headers to be sent:", headers);
-
-            const response = await fetch('/perform_login', { // Updated to custom login processing URL
-                method: 'POST',
-                headers: headers,
-                body: new URLSearchParams({ username, password }),
-            });
-
-            setLoading(false);
-
-            if (response.ok) {
-                const userData = await response.json();
-                localStorage.setItem('user', JSON.stringify(userData));
-                navigate('/equipo'); // Redirect to a protected page
-            } else {
-                if (response.status === 401) {
-                    const errorData = await response.json();
-                    setError(errorData.message || 'Invalid username or password.');
-                } else {
-                    setError(`Login failed: ${response.statusText} (Status: ${response.status})`);
-                }
+            const response = await api.auth.login(username, password);
+            
+            if (response.success && response.data) {
+                localStorage.setItem('user', JSON.stringify(response.data));
+                navigate('/equipo');
             }
-        } catch (err) {
+        } catch (error) {
+            if (error instanceof ApiError) {
+                setError(error.message);
+            } else {
+                setError('An unexpected error occurred. Please try again.');
+            }
+            console.error('Login error:', error);
+        } finally {
             setLoading(false);
-            setError('An unexpected error occurred. Please try again.');
-            console.error('Login error:', err);
         }
     };
 

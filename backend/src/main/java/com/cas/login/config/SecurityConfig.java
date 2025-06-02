@@ -51,58 +51,58 @@ public class SecurityConfig {
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
-    }
-
-    @Bean
+    }    @Bean
     @Order(1) // API specific configuration
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/api/**") // Apply this filter chain only to /api/** paths
             .authorizeHttpRequests(authorizeRequests ->
                 authorizeRequests
+                    .requestMatchers("/api/status", "/api/health").permitAll() // Public API endpoints
                     .requestMatchers("/api/acampantes/**").hasAnyRole("DIRIGENTE", "ADMIN")
                     .requestMatchers("/api/dirigentes/**").hasRole("ADMIN")
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/user/me").authenticated()
-                    .anyRequest().denyAll() // Or .authenticated() if other /api endpoints exist and need securing
+                    .requestMatchers("/api/logout").authenticated()
+                    .anyRequest().authenticated()
             )
-            .httpBasic(customizer -> {}) // Example: enable HTTP Basic for APIs, or use JWT, etc.
-            .csrf(csrf -> csrf.disable()) // Typically disable CSRF for stateless APIs
+            .httpBasic(customizer -> {}) // Enable HTTP Basic for APIs
+            .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
             .exceptionHandling(eh -> eh
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)) // Return 401 for unauthenticated
             );
-            // .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // If API is stateless
 
         return http.build();
-    }
-
-    @Bean
+    }    @Bean
     @Order(2) // Form login configuration for other paths
     public SecurityFilterChain formLoginFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/login", "/perform_login", "/css/**", "/js/**", "/error", "/").permitAll() // Allow /perform_login
-                    .anyRequest().authenticated() // All other paths require authentication
+                    .requestMatchers("/perform_login", "/error").permitAll()
+                    .requestMatchers("/").permitAll() // Allow access to root for API status
+                    .anyRequest().authenticated()
             )
             .formLogin(formLogin ->
                 formLogin
-                    .loginPage("/login")
-                    .loginProcessingUrl("/perform_login") // Explicit login processing URL
+                    .loginProcessingUrl("/perform_login") // API login endpoint
                     .successHandler(successHandler()) // Custom success handler
                     .failureHandler(failureHandler()) // Custom failure handler
                     .permitAll()
             )
             .logout(logout ->
                 logout
-                    .logoutSuccessUrl("/login?logout")
+                    .logoutUrl("/api/logout")
+                    .logoutSuccessHandler((request, response, authentication) -> {
+                        response.setStatus(200);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"success\": true, \"message\": \"Logout successful\"}");
+                    })
                     .permitAll()
             )
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // Keep CSRF for form login
-            )
+            .csrf(csrf -> csrf.disable()) // Disable CSRF for API
             // Add the CookieLoggingFilter after CsrfFilter
-            .addFilterAfter(new CookieLoggingFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
+            .addFilterAfter(new CookieLoggingFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
             .authenticationProvider(authenticationProvider());
 
         return http.build();

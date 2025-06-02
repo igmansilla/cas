@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import MainLayout from './MainLayout';
-import { MemoryRouter, Routes, Route, NavigateProps }
+import { MemoryRouter, Routes, Route }
     from 'react-router-dom';
 
 // Mock react-router-dom's useNavigate and NavLink
@@ -58,7 +58,6 @@ const renderMainLayoutWithUser = (userData: any) => {
                     <Route path="/equipo" element={<TestPage title="Equipo Page" />} />
                     <Route path="/acampantes" element={<TestPage title="Acampantes Page" />} />
                     <Route path="/eventos" element={<TestPage title="Eventos Page" />} />
-                    <Route path="/chat" element={<TestPage title="Chat Page" />} />
                     <Route path="/mis-actividades" element={<TestPage title="Mis Actividades Page" />} />
                 </Routes>
             </MainLayout>
@@ -82,7 +81,6 @@ describe('MainLayout', () => {
         expect(screen.getByText(`Roles: ${userData.roles.join(', ')}`)).toBeInTheDocument();
         expect(screen.getByText('Lista de Equipo')).toBeInTheDocument(); // NavLink renders as <a>
         expect(screen.getByText('Cronograma de Eventos')).toBeInTheDocument();
-        expect(screen.getByText('Chat Grupal')).toBeInTheDocument();
         expect(screen.getByText('Cerrar Sesión')).toBeInTheDocument();
     });
 

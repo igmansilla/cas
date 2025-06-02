@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom'; // Import NavLink and useNavigate
 import { Menu as MenuIcon, X as XIcon, LogOut } from 'lucide-react'; // For hamburger, close, and logout icons
+import { api } from '../services/api';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -33,24 +34,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       navigate('/login');
     }
   }, [navigate]);
-
   const handleLogout = async () => {
     try {
-      // Attempt to call backend logout endpoint
-      const response = await fetch('/logout', { // Default Spring Security logout is often GET and might be configured to POST
-        method: 'POST', // Assuming POST for logout as it's common for SPAs to prevent CSRF issues with GET logout
-        headers: {
-          // If CSRF token is needed for POST logout, it should be included here
-          // 'X-XSRF-TOKEN': csrfToken, // Example if CSRF is enforced on POST logout
-        },
-      });
-      if (!response.ok) {
-        // Log error if backend logout fails, but proceed with client-side logout
-        console.error('Backend logout failed:', response.status, response.statusText);
-      }
+      await api.auth.logout();
     } catch (error) {
-      // Log network or other errors during backend logout, but proceed
-      console.error('Error during backend logout:', error);
+      console.error('Error during logout:', error);
     } finally {
       // Always perform client-side logout
       localStorage.removeItem('user');
@@ -124,9 +112,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               >
                 Mis Actividades (Campista)
               </NavLink>
-            )}
-
-            {/* Common Links */}
+            )}            {/* Common Links */}
             <NavLink
               to="/eventos"
               className={({ isActive }) =>
@@ -136,16 +122,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               }
             >
               Cronograma de Eventos
-            </NavLink>
-            <NavLink
-              to="/chat"
-              className={({ isActive }) =>
-                `block px-4 py-2.5 rounded-lg shadow-sm transition-colors duration-150 ease-in-out ${
-                  isActive ? 'bg-primary-dark text-white font-medium' : 'text-gray-300 hover:bg-primary-dark hover:text-white'
-                }`
-              }
-            >
-              Chat Grupal
             </NavLink>
           </nav>
         </div>

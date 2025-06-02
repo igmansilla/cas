@@ -4,10 +4,9 @@ import MainLayout from "./components/MainLayout";
 import PackingListApp from "./components/PackingListApp";
 import GestionAcampantesPage from "./components/GestionAcampantesPage";
 import CronogramaEventosPage from "./components/CronogramaEventosPage";
-import ChatGrupalPage from "./components/ChatGrupalPage";
 import LoginPage from "./components/LoginPage"; // Import LoginPage
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
-import './index.css';
+import "./index.css";
 
 function App() {
   return (
@@ -56,16 +55,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/chat"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <ChatGrupalPage />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
+
       {/* Optional: Add a catch-all route for 404 Not Found, can also be protected or public */}
       {/* <Route path="*" element={<div>Page Not Found</div>} /> */}
     </Routes>

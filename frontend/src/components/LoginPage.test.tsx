@@ -79,10 +79,8 @@ describe('LoginPage', () => {
         fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password123' } });
         fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
-        expect(screen.getByRole('button', { name: /logging in.../i})).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(fetch).toHaveBeenCalledWith('/login', {
+        expect(screen.getByRole('button', { name: /logging in.../i})).toBeInTheDocument();        await waitFor(() => {
+            expect(fetch).toHaveBeenCalledWith('/perform_login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -109,10 +107,8 @@ describe('LoginPage', () => {
         fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'wrongpass' } });
         fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
-        expect(screen.getByRole('button', { name: /logging in.../i})).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(fetch).toHaveBeenCalledWith('/login', expect.anything());
+        expect(screen.getByRole('button', { name: /logging in.../i})).toBeInTheDocument();        await waitFor(() => {
+            expect(fetch).toHaveBeenCalledWith('/perform_login', expect.anything());
         });
 
         await waitFor(() => expect(screen.getByText(mockErrorData.message)).toBeInTheDocument());
