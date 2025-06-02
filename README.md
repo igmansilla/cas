@@ -4,6 +4,8 @@ Un proyecto con un frontend en React y un backend en Java Spring Boot.
 
 ## Frontend
 
+- [Frontend README](./frontend/README.md)
+
 El frontend está construido usando:
 - React
 - TypeScript
@@ -29,6 +31,8 @@ npm run build
 ```
 
 ## Backend
+
+- [Backend README](./backend/README.md)
 
 El backend consiste en una aplicación principal Spring Boot y un servicio de login separado.
 
