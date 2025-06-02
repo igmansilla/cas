@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Logo } from './Logo'; // Import the Logo component
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState<string>('');
@@ -63,36 +64,41 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '5px' }}>
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '15px' }}>
-                    <label htmlFor="username" style={{ display: 'block', marginBottom: '5px' }}>Username:</label>
-                    <input
-                        type="text"
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                    />
+        <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4 sm:p-0">
+            <div className="bg-white shadow-lg rounded-lg p-6 sm:p-8 max-w-md w-full">
+                <div className="flex justify-center mb-6">
+                    <Logo />
                 </div>
-                <div style={{ marginBottom: '15px' }}>
-                    <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                    />
-                </div>
-                {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
-                <button type="submit" disabled={loading} style={{ padding: '10px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>
-                    {loading ? 'Logging in...' : 'Login'}
-                </button>
-            </form>
+                <h2 className="text-3xl font-bold mb-6 text-center text-cas-black">Login</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-5">
+                        <label htmlFor="username" className="block mb-2 text-sm font-medium text-cas-black">Username:</label>
+                        <input
+                            type="text"
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                            className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-cas-orange focus:border-cas-orange text-cas-black"
+                        />
+                    </div>
+                    <div className="mb-6">
+                        <label htmlFor="password" className="block mb-2 text-sm font-medium text-cas-black">Password:</label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-cas-orange focus:border-cas-orange text-cas-black"
+                        />
+                    </div>
+                    {error && <p className="text-cas-red text-sm mb-4 text-center">{error}</p>}
+                    <button type="submit" disabled={loading} className="w-full py-3 px-4 bg-cas-orange text-cas-white font-semibold rounded-md shadow-md cursor-pointer hover:bg-cas-orange/90 focus:outline-none focus:ring-2 focus:ring-cas-orange focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        {loading ? 'Logging in...' : 'Login'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };
