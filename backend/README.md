@@ -1,17 +1,17 @@
 # Backend
 
-This project is built using Java and Spring Boot.
+Este proyecto está construido con Java y Spring Boot.
 
-## Project Structure
+## Estructura del Proyecto
 
-- `src/main/java`: Contains the main source code of the application.
-- `src/main/resources`: Contains static resources, templates, and configuration files.
-- `src/test/java`: Contains the test source code.
-- `build.gradle`: The build configuration file for Gradle.
+- `src/main/java`: Contiene el código fuente principal de la aplicación.
+- `src/main/resources`: Contiene recursos estáticos, plantillas y archivos de configuración.
+- `src/test/java`: Contiene el código fuente de las pruebas.
+- `build.gradle`: El archivo de configuración de compilación para Gradle.
 
-## How to Run
+## Cómo Ejecutar
 
-1. Make sure you have Java JDK 17 or higher installed.
-2. Navigate to the `backend` folder in your terminal.
-3. Run the command `./gradlew bootRun`.
-4. The backend server will start on the default port (usually 8080).
+1. Asegúrate de tener Java JDK 17 o superior instalado.
+2. Navega a la carpeta `backend` en tu terminal.
+3. Ejecuta el comando `./gradlew bootRun`.
+4. El servidor backend se iniciará en el puerto predeterminado (generalmente 8080).

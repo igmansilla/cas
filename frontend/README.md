@@ -1,36 +1,36 @@
 # Frontend
 
-This project is built using React, Vite, and TypeScript.
+Este proyecto está construido con React, Vite y TypeScript.
 
-## Project Structure
+## Estructura del Proyecto
 
-- `src`: Contains the main source code of the application.
-  - `components`: Contains React components.
-  - `assets`: Contains static assets like images and fonts.
-  - `App.tsx`: The main application component.
-  - `main.tsx`: The entry point of the application.
-- `public`: Contains static assets that are copied directly to the build output.
-- `index.html`: The main HTML file.
-- `package.json`: The project configuration file for npm.
-- `vite.config.ts`: The configuration file for Vite.
+- `src`: Contiene el código fuente principal de la aplicación.
+  - `components`: Contiene componentes de React.
+  - `assets`: Contiene assets estáticos como imágenes y fuentes.
+  - `App.tsx`: El componente principal de la aplicación.
+  - `main.tsx`: El punto de entrada de la aplicación.
+- `public`: Contiene assets estáticos que se copian directamente en la compilación final.
+- `index.html`: El archivo HTML principal.
+- `package.json`: El archivo de configuración del proyecto para npm.
+- `vite.config.ts`: El archivo de configuración para Vite.
 
-## How to Run
+## Cómo Ejecutar
 
-1. Make sure you have Node.js and npm (or yarn) installed.
-2. Navigate to the `frontend` folder in your terminal.
-3. Install the dependencies by running `npm install` (or `yarn install`).
+1. Asegúrate de tener Node.js y npm (o yarn) instalados.
+2. Navega a la carpeta `frontend` en tu terminal.
+3. Instala las dependencias ejecutando `npm install` (o `yarn install`).
 
-### Development Mode
+### Modo de Desarrollo
 
-- Run the command `npm run dev` (or `yarn dev`).
-- The frontend development server will start on the default port (usually 3000 or 5173).
+- Ejecuta el comando `npm run dev` (o `yarn dev`).
+- El servidor de desarrollo del frontend se iniciará en el puerto predeterminado (generalmente 3000 o 5173).
 
-### Production Build
+### Compilación para Producción
 
-- Run the command `npm run build` (or `yarn build`).
-- This will create a `dist` folder with the production-ready files.
+- Ejecuta el comando `npm run build` (o `yarn build`).
+- Esto creará una carpeta `dist` con los archivos listos para producción.
 
-### Preview Production Build
+### Vista Previa de la Compilación de Producción
 
-- Run the command `npm run preview` (or `yarn preview`).
-- This will serve the production build locally for testing.
+- Ejecuta el comando `npm run preview` (o `yarn preview`).
+- Esto servirá la compilación de producción localmente para pruebas.
