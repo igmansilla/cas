@@ -33,8 +33,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       // This case should ideally be handled by ProtectedRoute, but as a safeguard:
       navigate('/login');
     }
-  }, [navigate]);
-  const handleLogout = async () => {
+  }, [navigate]);  const handleLogout = async () => {
     try {
       await api.auth.logout();
     } catch (error) {
@@ -42,6 +41,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     } finally {
       // Always perform client-side logout
       localStorage.removeItem('user');
+      localStorage.removeItem('userCredentials');
       setUser(null);
       navigate('/login');
     }
