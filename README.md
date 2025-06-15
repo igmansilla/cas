@@ -1,4 +1,4 @@
-# listacas
+# cas
 
 Un proyecto con un frontend en React y un backend en Java Spring Boot.
 
