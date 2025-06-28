@@ -19,7 +19,15 @@ export interface PaginationInfo {
 }
 
 // Usuario y autenticación
-export interface User {
+export interface User { // Este es el modelo User del backend (parcial)
+  id: number; // Asumiendo que el User del backend tiene un ID numérico
+  username: string;
+  roles: string[];
+  // Otros campos que puedan venir del backend user
+}
+
+export interface UserData { // Este es el tipo que se usa en el frontend, puede ser igual o un subconjunto de User
+  id: number;
   username: string;
   roles: string[];
 }
@@ -136,4 +144,33 @@ export interface PackingListDto {
   categories: PackingListCategoryDto[];
   createdAt?: string; // ISO date string
   updatedAt?: string; // ISO date string
+}
+
+// Assistance
+export interface AssistanceRecord {
+  id: number;
+  userId: number; // o user: User; si se devuelve el objeto completo
+  userName?: string; // Opcional, para mostrar en el frontend
+  date: string; // ISO date string e.g., "2024-07-30"
+  hasAttended: boolean;
+}
+
+export interface AssistanceRecordRequest {
+  userId: number;
+  date: string; // ISO date string e.g., "2024-07-30"
+  hasAttended: boolean;
+}
+
+export interface UserAssistanceOnDateRequest {
+  userIds: number[];
+  date: string; // ISO date string e.g., "2024-07-30"
+}
+
+// User Supervision
+export interface UserDto {
+  id: number;
+  username: string;
+  roles: string[];
+  // fullName?: string;
+  // email?: string;
 }

@@ -3,11 +3,23 @@
 import type {
   ApiResponse,
   LoginResponse,
-  PackingListDto, // Import the new DTO
+  PackingListDto,
+  AssistanceRecord,
+  AssistanceRecordRequest,
+  UserAssistanceOnDateRequest,
+  UserDto, // Añadir UserDto
 } from '../types/api';
 
 // Re-export para compatibilidad con código existente
-export type { ApiResponse, LoginResponse, PackingListDto };
+export type {
+  ApiResponse,
+  LoginResponse,
+  PackingListDto,
+  AssistanceRecord,
+  AssistanceRecordRequest,
+  UserAssistanceOnDateRequest,
+  UserDto, // Añadir UserDto
+};
 export interface UserData {
   username: string;
   roles: string[];
@@ -261,6 +273,50 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  },
+
+  // Assistance
+  assistance: {
+    record: (data: AssistanceRecordRequest) =>
+      apiRequest<AssistanceRecord>('/api/assistance', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getForUserAndDate: (userId: number, date: string) =>
+      apiRequest<AssistanceRecord>(`/api/assistance/user/${userId}/date/${date}`),
+    getForUser: (userId: number) =>
+      apiRequest<AssistanceRecord[]>(`/api/assistance/user/${userId}`),
+    getByDate: (date: string) =>
+      apiRequest<AssistanceRecord[]>(`/api/assistance/date/${date}`),
+    getAll: () => apiRequest<AssistanceRecord[]>('/api/assistance'),
+    getForUsersOnDate: (data: UserAssistanceOnDateRequest) =>
+      apiRequest<AssistanceRecord[]>('/api/assistance/users-on-date', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    delete: (assistanceId: number) =>
+      apiRequest<void>(`/api/assistance/${assistanceId}`, {
+        method: 'DELETE',
+      }),
+    getForSupervisedCampers: (dirigenteId: number, date: string) =>
+      apiRequest<AssistanceRecord[]>(`/api/assistance/dirigente/${dirigenteId}/supervised/date/${date}`),
+  },
+
+  supervision: {
+    assignAcampanteToDirigente: (dirigenteId: number, acampanteId: number) =>
+      apiRequest<ApiResponse<unknown>>(`/api/supervision/dirigente/${dirigenteId}/assign/${acampanteId}`, { // ApiResponse<unknown> o un tipo más específico para el mensaje
+        method: 'POST',
+      }),
+    removeAcampanteFromDirigente: (dirigenteId: number, acampanteId: number) =>
+      apiRequest<ApiResponse<unknown>>(`/api/supervision/dirigente/${dirigenteId}/remove/${acampanteId}`, {
+        method: 'DELETE',
+      }),
+    getSupervisedCampers: (dirigenteId: number) =>
+      apiRequest<UserDto[]>(`/api/supervision/dirigente/${dirigenteId}/campers`),
+    getSupervisorsForAcampante: (acampanteId: number) =>
+      apiRequest<UserDto[]>(`/api/supervision/acampante/${acampanteId}/supervisors`),
+    getAllDirigentes: () => apiRequest<UserDto[]>('/api/supervision/dirigentes'),
+    getAllAcampantes: () => apiRequest<UserDto[]>('/api/supervision/acampantes'),
   },
 
   // Generic API call para endpoints personalizados

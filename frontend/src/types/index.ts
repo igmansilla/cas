@@ -13,3 +13,23 @@ export interface PackingItem {
   text: string;
   isChecked: boolean;
 }
+
+// Tipos que ya deberían estar en api.ts pero por si se usan directamente en componentes
+export type {
+  User,
+  Acampante,
+  AcampanteRequest,
+  Dirigente,
+  DirigenteRequest,
+  Evento,
+  EventoRequest,
+  Mensaje,
+  MensajeRequest,
+  PackingListDto,
+  PackingListCategoryDto,
+  PackingListItemDto,
+  AssistanceRecord,
+  AssistanceRecordRequest,
+  UserAssistanceOnDateRequest,
+  UserData, // Asegurarse que UserData se exporta desde api.ts o se define aquí
+} from './api';

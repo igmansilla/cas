@@ -6,7 +6,8 @@ import {
   GestionAcampantesPage,
   CronogramaEventosPage,
   LoginPage,
-  ProtectedRoute
+  ProtectedRoute,
+  AssistancePage // Asegúrate de importar AssistancePage
 } from "./components";
 import "./index.css";
 
@@ -53,6 +54,16 @@ function App() {
           <ProtectedRoute>
             <MainLayout>
               <CronogramaEventosPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/asistencia"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <AssistancePage />
             </MainLayout>
           </ProtectedRoute>
         }
