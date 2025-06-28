@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { api, type Acampante, type AcampanteForm } from '../services/api';
-import { useApiList, useApi } from '../hooks/useApi';
+import { api, type Acampante, type AcampanteForm } from '../../services/api';
+import { useApiList, useApi } from '../../hooks/useApi';
 
 const GestionAcampantesPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);

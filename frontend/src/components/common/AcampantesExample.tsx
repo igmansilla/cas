@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { api } from '../services/api';
-import { useApi, useApiList } from '../hooks/useApi';
-import { Acampante } from '../types/api';
+import { api } from '../../services/api';
+import { useApi, useApiList } from '../../hooks/useApi';
+import { Acampante } from '../../types/api';
 
 // Ejemplo de componente que maneja acampantes
 const AcampantesExample: React.FC = () => {

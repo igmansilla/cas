@@ -9,7 +9,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
-import { PackingCategory } from "../types";
+import { PackingCategory } from "../../types";
 
 interface EditableListProps {
   category: PackingCategory;

@@ -1,11 +1,13 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom"; // Import Routes, Route, Navigate
-import MainLayout from "./components/MainLayout";
-import PackingListApp from "./components/PackingListApp";
-import GestionAcampantesPage from "./components/GestionAcampantesPage";
-import CronogramaEventosPage from "./components/CronogramaEventosPage";
-import LoginPage from "./components/LoginPage"; // Import LoginPage
-import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+import { Routes, Route, Navigate } from "react-router-dom";
+import {
+  MainLayout,
+  PackingListApp,
+  GestionAcampantesPage,
+  CronogramaEventosPage,
+  LoginPage,
+  ProtectedRoute
+} from "./components";
 import "./index.css";
 
 function App() {
