@@ -39,29 +39,6 @@ src/main/java/com/cas/login/
 | **DIRIGENTE** | Líder de campamento | Gestión de acampantes, funciones organizativas |
 | **USER** | Usuario básico | Acceso limitado a funcionalidades específicas |
 
-### Endpoints de API
-
-#### Públicos (sin autenticación)
-- `GET /api/status` - Estado del servicio
-- `GET /api/health` - Verificación de salud
-
-#### Autenticados
-- `GET /api/user/me` - Información del usuario actual
-- `POST /api/logout` - Cerrar sesión
-
-#### Para DIRIGENTE y ADMIN
-- `GET /api/acampantes` - Listar acampantes
-- `POST /api/acampantes` - Crear acampante
-- `PUT /api/acampantes/{id}` - Actualizar acampante
-- `DELETE /api/acampantes/{id}` - Eliminar acampante
-
-#### Solo ADMIN
-- `GET /api/dirigentes` - Listar dirigentes
-- `POST /api/dirigentes` - Crear dirigente
-- `PUT /api/dirigentes/{id}` - Actualizar dirigente
-- `DELETE /api/dirigentes/{id}` - Eliminar dirigente
-- `GET /api/admin/**` - Funciones administrativas
-
 ## 🚀 Desarrollo y Ejecución
 
 ### Prerrequisitos
@@ -87,7 +64,7 @@ src/main/java/com/cas/login/
    ./gradlew bootRun
    ```
 
-La aplicación estará disponible en `http://localhost:8080`
+La aplicación estará disponible en `http://localhost:8082`
 
 ### Comandos de Desarrollo
 
@@ -144,7 +121,7 @@ DB_USERNAME=myuser
 DB_PASSWORD=mypassword
 
 # Servidor
-SERVER_PORT=8080
+SERVER_PORT=8082
 
 # Logging
 LOGGING_LEVEL_ROOT=INFO
@@ -167,7 +144,7 @@ LOGGING_LEVEL_ROOT=INFO
 
 ```bash
 # Autenticación HTTP Basic
-curl -X POST http://localhost:8080/perform_login \
+curl -X POST http://localhost:8082/perform_login \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "username=admin@cas.com&password=admin123"
 ```
@@ -195,13 +172,6 @@ curl -X POST http://localhost:8080/perform_login \
 # Tests con reporte
 ./gradlew test jacocoTestReport
 ```
-
-### Tests de Seguridad
-Los tests incluyen verificación de:
-- Autenticación correcta
-- Autorización por roles
-- Respuestas de error apropiadas
-- Protección de endpoints
 
 ## 📚 Documentación Adicional
 
@@ -241,7 +211,7 @@ java -jar build/libs/login-service-0.0.1-SNAPSHOT.jar
 docker build -t campamentos-backend .
 
 # Ejecutar contenedor
-docker run -p 8080:8080 campamentos-backend
+docker run -p 8082:8082 campamentos-backend
 ```
 
 ## 🤝 Contribución
