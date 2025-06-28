@@ -104,9 +104,9 @@ Host: localhost
 
 El sistema incluye un `DataInitializer` que crea usuarios y roles de ejemplo:
 
-- **Admin**: `admin@cas.com` / `admin123`
-- **Dirigente**: `dirigente@cas.com` / `dirigente123`
-- **Usuario**: `user@cas.com` / `user123`
+- **Admin**: `admin` / `adminpass`
+- **Dirigente**: `dirigente1` / `dirigentepass`
+- **Super Dirigente**: `superdirigente` / `superpass` (DIRIGENTE + ADMIN)
 
 ## 🔧 Configuración
 
@@ -140,19 +140,89 @@ LOGGING_LEVEL_ROOT=INFO
 
 ## 📝 Autenticación
 
-### Login via API
+El sistema utiliza **Spring Security** con múltiples formas de autenticación según el tipo de endpoint:
 
+### 🔐 Métodos de Autenticación
+
+#### 1. **HTTP Basic Authentication** (Para APIs `/api/**`)
 ```bash
-# Autenticación HTTP Basic
+# Autenticación HTTP Basic para endpoints de API
+curl -X GET http://localhost:8082/api/user/me \
+  -H "Authorization: Basic $(echo -n 'admin:adminpass' | base64)"
+```
+
+#### 2. **Form Login** (Para autenticación web)
+```bash
+# Login via formulario
 curl -X POST http://localhost:8082/perform_login \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=admin@cas.com&password=admin123"
+  -d "username=admin&password=adminpass"
+```
+
+### 👥 Usuarios de Prueba
+
+| Username | Contraseña | Rol | Permisos |
+|----------|------------|-----|----------|
+| `admin` | `adminpass` | **ADMIN** | Acceso completo |
+| `dirigente1` | `dirigentepass` | **DIRIGENTE** | Gestión de acampantes |
+| `superdirigente` | `superpass` | **DIRIGENTE + ADMIN** | Acceso completo + gestión |
+
+### 🔧 Autenticación en Swagger UI
+
+Para usar Swagger UI con autenticación:
+
+1. **Abre Swagger UI:**
+   ```
+   http://localhost:8082/swagger-ui/index.html
+   ```
+
+2. **Autentícate usando HTTP Basic:**
+   - Haz clic en el botón **"Authorize"** 🔒 (esquina superior derecha)
+   - En el modal que se abre, busca **"basicScheme (http, Basic)"**
+   - Ingresa las credenciales:
+     - **Username:** `admin`
+     - **Password:** `adminpass`
+   - Haz clic en **"Authorize"**
+   - Haz clic en **"Close"**
+
+3. **Ahora podrás probar todos los endpoints protegidos directamente desde Swagger UI**
+
+### 📊 Endpoints por Rol
+
+#### 🔓 **Públicos** (Sin autenticación)
+- `GET /api/status` - Estado de la aplicación
+- `GET /api/health` - Health check
+
+#### 👤 **USER** (Autenticación requerida)
+- `GET /api/user/me` - Información del usuario actual
+
+#### 👨‍🏫 **DIRIGENTE** (Rol DIRIGENTE o ADMIN)
+- `GET /api/acampantes/**` - Gestión de acampantes
+- `GET /api/packing-list/**` - Listas de equipaje
+
+#### 🔑 **ADMIN** (Solo ADMIN)
+- `GET /api/dirigentes/**` - Gestión de dirigentes
+- `GET /api/admin/**` - Funciones administrativas
+
+### 🧪 Pruebas de Autenticación
+
+```bash
+# Verificar acceso sin autenticación (debería fallar)
+curl -X GET http://localhost:8082/api/user/me
+
+# Verificar acceso con credenciales válidas
+curl -X GET http://localhost:8082/api/user/me \
+  -u "admin:adminpass"
+
+# Verificar logout
+curl -X POST http://localhost:8082/api/logout \
+  -u "admin:adminpass"
 ```
 
 ### Respuesta de Login Exitoso
 ```json
 {
-  "username": "admin@cas.com",
+  "username": "admin",
   "roles": ["ROLE_ADMIN"],
   "success": true,
   "message": "Authentication successful"
@@ -172,12 +242,6 @@ curl -X POST http://localhost:8082/perform_login \
 # Tests con reporte
 ./gradlew test jacocoTestReport
 ```
-
-## 📚 Documentación Adicional
-
-- [Configuración de Seguridad Detallada](./src/main/java/com/cas/login/config/README.md)
-- [Módulo de Login](./src/main/java/com/cas/login/README.md)
-
 ## 🐛 Debugging
 
 ### Logs útiles
