@@ -13,6 +13,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.cas.packinglist.model.PackingList; // Added import
+import jakarta.persistence.CascadeType; // Added import
+import jakarta.persistence.OneToOne; // Added import
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +32,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private String username;
     private String password;
 
@@ -39,6 +43,9 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private PackingList packingList;
 
     // Constructor without id (for creation)
     public User(String username, String password) {
