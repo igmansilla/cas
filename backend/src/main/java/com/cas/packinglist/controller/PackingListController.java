@@ -11,9 +11,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-// Assuming a custom UserDetails implementation that holds the ID, or a Principal that can be resolved to a User entity.
-// For example, if using a custom UserDetails object:
-// import com.cas.login.security.services.UserDetailsImpl; // Example path
+// Assuming a custom UserDetails implementation that holds the ID.
+// Import the UserDetailsImpl from the specified path if it exists and is used.
+import com.cas.login.security.services.UserDetailsImpl; // Adjusted path based on typical project structure
 
 @RestController
 @RequestMapping("/api/packing-list")
