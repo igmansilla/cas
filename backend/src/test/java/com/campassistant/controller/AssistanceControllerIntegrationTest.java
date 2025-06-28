@@ -6,6 +6,7 @@ import com.cas.login.model.Role;
 import com.cas.login.model.User;
 import com.cas.login.repository.RoleRepository;
 import com.cas.login.repository.UserRepository;
+import com.cas.login.service.UserSupervisionService; // Necesario para el setup
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
+// import org.springframework.test.context.ActiveProfiles; // Removido para usar la DB principal de test
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional // Para asegurar que cada test corre en su propia transacción y se hace rollback
-@ActiveProfiles("test") // Asumiendo que tienes un application-test.properties para H2 u otra DB en memoria
+// @ActiveProfiles("test") // Removido para usar la DB principal de testeo configurada en application.properties
 public class AssistanceControllerIntegrationTest {
 
     @Autowired
@@ -53,14 +54,28 @@ public class AssistanceControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired // Inyectar UserSupervisionService
+    private UserSupervisionService userSupervisionService;
+
     private ObjectMapper objectMapper;
 
-    private User testUser1;
-    private User testUser2;
+    private User testUser1; // Cambiará a acampante1
+    private User testUser2; // Cambiará a acampante2
     private User adminUser;
+    private User dirigenteUser; // Nuevo dirigente para pruebas
 
     @BeforeEach
     void setUp() {
+        // Limpiar explícitamente para evitar problemas de orden de borrado con relaciones ManyToMany
+        // Esto es importante si las pruebas anteriores no limpiaron bien o si hay datos persistentes.
+        // En un @Transactional, esto podría no ser estrictamente necesario si el rollback es completo.
+        userRepository.findAll().forEach(user -> {
+            user.getRoles().clear();
+            user.getSupervisedCampers().clear();
+            user.getSupervisors().clear();
+            userRepository.save(user);
+        });
+
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule()); // Para serializar/deserializar LocalDate
 
@@ -68,22 +83,36 @@ public class AssistanceControllerIntegrationTest {
         userRepository.deleteAll();
         roleRepository.deleteAll();
 
-        Role roleUser = roleRepository.save(new Role("ROLE_USER"));
+        Role roleUser = roleRepository.save(new Role("ROLE_USER")); // Será usado por acampantes también
         Role roleAdmin = roleRepository.save(new Role("ROLE_ADMIN"));
         Role roleStaff = roleRepository.save(new Role("ROLE_STAFF"));
+        Role roleDirigente = roleRepository.save(new Role("ROLE_DIRIGENTE"));
+        Role roleAcampante = roleRepository.save(new Role("ROLE_ACAMPANTE"));
 
 
-        testUser1 = new User("testuser1", passwordEncoder.encode("password"));
-        testUser1.setRoles(new HashSet<>(Arrays.asList(roleUser)));
+        // Renombrar testUser1 y testUser2 a acampante1 y acampante2 para claridad
+        testUser1 = new User("acampante1", passwordEncoder.encode("password"));
+        testUser1.setRoles(new HashSet<>(Arrays.asList(roleUser, roleAcampante)));
         testUser1 = userRepository.save(testUser1);
 
-        testUser2 = new User("testuser2", passwordEncoder.encode("password"));
-        testUser2.setRoles(new HashSet<>(Arrays.asList(roleUser)));
+        testUser2 = new User("acampante2", passwordEncoder.encode("password"));
+        testUser2.setRoles(new HashSet<>(Arrays.asList(roleUser, roleAcampante)));
         testUser2 = userRepository.save(testUser2);
 
         adminUser = new User("adminuser", passwordEncoder.encode("password"));
-        adminUser.setRoles(new HashSet<>(Arrays.asList(roleAdmin, roleStaff))); // Admin también es Staff para algunas pruebas
+        adminUser.setRoles(new HashSet<>(Arrays.asList(roleAdmin, roleStaff, roleUser)));
         adminUser = userRepository.save(adminUser);
+
+        dirigenteUser = new User("dirigente1", passwordEncoder.encode("password"));
+        dirigenteUser.setRoles(new HashSet<>(Arrays.asList(roleUser, roleDirigente)));
+        dirigenteUser = userRepository.save(dirigenteUser);
+    }
+
+    // Helper para crear usuario, si no existe uno global en la clase de test.
+    private User createUser(String username, String password, Set<Role> roles) {
+        User user = new User(username, passwordEncoder.encode(password));
+        user.setRoles(roles);
+        return userRepository.save(user);
     }
 
     @Test
@@ -243,5 +272,48 @@ public class AssistanceControllerIntegrationTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[?(@.userId == %d && @.hasAttended == true)]", testUser1.getId().intValue()).exists())
                 .andExpect(jsonPath("$[?(@.userId == %d && @.hasAttended == false)]", testUser2.getId().intValue()).exists());
+    }
+
+    @Test
+    @WithMockUser(username = "dirigente1", roles = {"DIRIGENTE"})
+    void getAssistanceForSupervisedCampers_asDirigente_shouldReturnCorrectAssistance() throws Exception {
+        // Asignar acampantes al dirigenteUser (dirigente1)
+        userSupervisionService.assignAcampanteToDirigente(dirigenteUser.getId(), testUser1.getId()); // acampante1
+        userSupervisionService.assignAcampanteToDirigente(dirigenteUser.getId(), testUser2.getId()); // acampante2
+
+        // Crear un tercer acampante no supervisado por este dirigente
+        User acampante3 = createUser("acampante3", "password", new HashSet<>(Arrays.asList(roleRepository.findByName("ROLE_USER").get(), roleRepository.findByName("ROLE_ACAMPANTE").get())));
+
+        LocalDate today = LocalDate.now();
+
+        // Registrar asistencia
+        assistanceRepository.save(new Assistance(null, testUser1, today, true));  // Supervisado, presente
+        assistanceRepository.save(new Assistance(null, testUser2, today, false)); // Supervisado, ausente
+        assistanceRepository.save(new Assistance(null, acampante3, today, true)); // No supervisado, presente
+
+        mockMvc.perform(get("/api/assistance/dirigente/{dirigenteId}/supervised/date/{date}", dirigenteUser.getId(), today.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2))) // Solo los 2 supervisados
+                .andExpect(jsonPath("$[?(@.userId == %d && @.hasAttended == true)]", testUser1.getId().intValue()).exists()) // acampante1 presente
+                .andExpect(jsonPath("$[?(@.userId == %d && @.hasAttended == false)]", testUser2.getId().intValue()).exists()); // acampante2 ausente
+    }
+
+    @Test
+    @WithMockUser(username = "otherdirigente", roles = {"DIRIGENTE"}) // Un dirigente diferente
+    void getAssistanceForSupervisedCampers_asOtherDirigente_shouldBeForbidden() throws Exception {
+        // No es el dirigenteUser (dirigente1) ni ADMIN
+        mockMvc.perform(get("/api/assistance/dirigente/{dirigenteId}/supervised/date/{date}", dirigenteUser.getId(), LocalDate.now().toString()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "adminuser", roles = {"ADMIN"}) // Admin sí puede acceder
+    void getAssistanceForSupervisedCampers_asAdmin_shouldSucceed() throws Exception {
+        userSupervisionService.assignAcampanteToDirigente(dirigenteUser.getId(), testUser1.getId());
+        assistanceRepository.save(new Assistance(null, testUser1, LocalDate.now(), true));
+
+        mockMvc.perform(get("/api/assistance/dirigente/{dirigenteId}/supervised/date/{date}", dirigenteUser.getId(), LocalDate.now().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
     }
 }

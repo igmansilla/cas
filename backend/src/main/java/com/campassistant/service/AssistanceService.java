@@ -3,7 +3,8 @@ package com.campassistant.service;
 import com.campassistant.model.Assistance;
 import com.campassistant.repository.AssistanceRepository;
 import com.cas.login.model.User;
-import com.cas.login.repository.UserRepository; // Asumiendo que tienes un UserRepository
+import com.cas.login.repository.UserRepository;
+import com.cas.login.service.UserSupervisionService; // Importar el nuevo servicio
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +17,16 @@ import java.util.Optional;
 public class AssistanceService {
 
     private final AssistanceRepository assistanceRepository;
-    private final UserRepository userRepository; // Para buscar usuarios
+    private final UserRepository userRepository;
+    private final UserSupervisionService userSupervisionService; // Inyectar el servicio
 
     @Autowired
-    public AssistanceService(AssistanceRepository assistanceRepository, UserRepository userRepository) {
+    public AssistanceService(AssistanceRepository assistanceRepository,
+                             UserRepository userRepository,
+                             UserSupervisionService userSupervisionService) {
         this.assistanceRepository = assistanceRepository;
         this.userRepository = userRepository;
+        this.userSupervisionService = userSupervisionService;
     }
 
     @Transactional
@@ -88,5 +93,22 @@ public class AssistanceService {
             return true;
         }
         return false; // O lanzar una excepción si el registro no existe
+    }
+
+    @Transactional(readOnly = true)
+    public List<Assistance> getAssistanceForSupervisedCampers(Long dirigenteId, LocalDate date) {
+        // Obtener los IDs de los acampantes supervisados por el dirigente
+        Set<User> supervisedCampers = userSupervisionService.getSupervisedCampers(dirigenteId);
+
+        if (supervisedCampers.isEmpty()) {
+            return List.of(); // Devuelve una lista vacía si no hay acampantes supervisados
+        }
+
+        // List<Long> supervisedCamperIds = supervisedCampers.stream()
+        //                                                 .map(User::getId)
+        //                                                 .collect(Collectors.toList());
+        // return getAssistanceForUsersOnDate(supervisedCamperIds, date);
+        // El método findByUserInAndDate espera List<User>, no List<Long>
+        return assistanceRepository.findByUserInAndDate(List.copyOf(supervisedCampers), date);
     }
 }

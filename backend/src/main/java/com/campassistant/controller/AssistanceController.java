@@ -83,9 +83,9 @@ public class AssistanceController {
 
     // Endpoint para obtener la asistencia de un grupo de usuarios en una fecha
     // Se espera una lista de userIds en el cuerpo de la solicitud: { "userIds": [1, 2, 3], "date": "2024-07-30" }
-    @PostMapping("/users-on-date")
+    @PostMapping("/users-on-date") // Renombrar o clarificar si es solo para Admin/Staff vs. Dirigentes
     @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
-    public ResponseEntity<List<Assistance>> getAssistanceForUsersOnDate(@RequestBody UserAssistanceOnDateRequest request) {
+    public ResponseEntity<List<Assistance>> getAssistanceForSpecificUsersOnDate(@RequestBody UserAssistanceOnDateRequest request) {
         try {
             List<Assistance> assistanceList = assistanceService.getAssistanceForUsersOnDate(request.getUserIds(), request.getDate());
             return ResponseEntity.ok(assistanceList);
@@ -104,6 +104,26 @@ public class AssistanceController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    // Nuevo endpoint para dirigentes
+    @GetMapping("/dirigente/{dirigenteId}/supervised/date/{date}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @userSecurityService.isSelf(#dirigenteId, authentication))")
+    public ResponseEntity<?> getAssistanceForSupervisedCampers(
+            @PathVariable Long dirigenteId,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        try {
+            List<Assistance> assistanceList = assistanceService.getAssistanceForSupervisedCampers(dirigenteId, date);
+            // Considerar un DTO para Assistance si es necesario para el frontend,
+            // especialmente si la entidad Assistance tiene relaciones que no quieres exponer directamente.
+            return ResponseEntity.ok(assistanceList);
+        } catch (IllegalArgumentException e) {
+            // Si el dirigente no existe o no es un dirigente
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            // Captura general para otros posibles errores
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno al procesar la solicitud."));
+        }
     }
 
     // DTOs para las solicitudes (pueden ir en un paquete separado si prefieres, ej. com.campassistant.dto)

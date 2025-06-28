@@ -2,20 +2,23 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import AssistancePage from './AssistancePage'; // Importar usando export default
+import AssistancePage from './AssistancePage';
 import { api } from '../../services/api';
-import { UserData } from '../../types';
+import type { UserData, UserDto, AssistanceRecord } from '../../types';
 
-// Mockear el servicio api
+// Mockear el servicio api completo
 jest.mock('../../services/api', () => ({
   api: {
     assistance: {
       getByDate: jest.fn(),
       record: jest.fn(),
+      getForSupervisedCampers: jest.fn(), // Nuevo mock
     },
-    // Mockear la llamada hipotética para obtener todos los usuarios/campistas
-    // Si tienes un endpoint real, mockea ese.
-    call: jest.fn(),
+    supervision: {
+      getSupervisedCampers: jest.fn(), // Nuevo mock
+      getAllAcampantes: jest.fn(),   // Nuevo mock
+    },
+    call: jest.fn(), // Mantener por si alguna prueba antigua lo usa indirectamente
   },
 }));
 
@@ -24,196 +27,226 @@ jest.mock('../../hooks/useLocalStorage', () => ({
   useLocalStorage: jest.fn(),
 }));
 
-const mockCurrentUser: UserData = {
+const mockUserDirigente: UserData = {
   id: 1,
-  username: 'testuser',
-  roles: ['USER', 'CAMPER'],
+  username: 'dirigenteUser',
+  roles: ['ROLE_USER', 'ROLE_DIRIGENTE'],
 };
 
-const mockCampersList: UserData[] = [
-  { id: 1, username: 'Test User 1', roles: ['CAMPER'] },
-  { id: 2, username: 'Test User 2', roles: ['CAMPER'] },
+const mockUserAdmin: UserData = {
+  id: 2,
+  username: 'adminUser',
+  roles: ['ROLE_USER', 'ROLE_ADMIN'],
+};
+
+const mockUserStaff: UserData = {
+  id: 3,
+  username: 'staffUser',
+  roles: ['ROLE_USER', 'ROLE_STAFF'],
+};
+
+const mockUserSimple: UserData = {
+  id: 4,
+  username: 'simpleUser',
+  roles: ['ROLE_USER'],
+};
+
+const mockAcampantesList: UserDto[] = [
+  { id: 101, username: 'Acampante Supervisado 1', roles: ['ROLE_ACAMPANTE'] },
+  { id: 102, username: 'Acampante Supervisado 2', roles: ['ROLE_ACAMPANTE'] },
 ];
 
-describe('AssistancePage', () => {
-  beforeEach(() => {
-    // Resetear mocks antes de cada prueba
-    jest.clearAllMocks();
+const mockAllAcampantesList: UserDto[] = [
+  ...mockAcampantesList,
+  { id: 103, username: 'Otro Acampante 3', roles: ['ROLE_ACAMPANTE'] },
+];
 
-    // Configurar mock de useLocalStorage para devolver un usuario
+const today = new Date().toISOString().split('T')[0];
+
+describe('AssistancePage', () => {
+  const setupMocks = (currentUser: UserData | null) => {
     (require('../../hooks/useLocalStorage').useLocalStorage as jest.Mock).mockReturnValue({
-      storedValue: mockCurrentUser,
+      storedValue: currentUser,
       setValue: jest.fn(),
     });
 
-    // Configurar mock para la llamada que obtiene todos los campistas/usuarios
-    // Asumimos que api.call('/api/users') es lo que se usaría o un endpoint similar.
-    // Si AssistancePage usa api.auth.getAllUsers() o algo así, mockea eso.
-    (api.call as jest.Mock).mockResolvedValue({
-      data: mockCampersList, // Lista de usuarios/campistas
-      success: true,
-    });
+    // Resetear todos los mocks de api para cada configuración
+    (api.supervision.getSupervisedCampers as jest.Mock).mockReset();
+    (api.supervision.getAllAcampantes as jest.Mock).mockReset();
+    (api.assistance.getForSupervisedCampers as jest.Mock).mockReset();
+    (api.assistance.getByDate as jest.Mock).mockReset();
+    (api.assistance.record as jest.Mock).mockReset();
 
-    // Configurar mock para getByDate (inicialmente sin registros)
-    (api.assistance.getByDate as jest.Mock).mockResolvedValue({
-      data: [],
-      success: true,
-    });
-
-    // Configurar mock para record (simula una respuesta exitosa)
-    (api.assistance.record as jest.Mock).mockImplementation(async (request) => ({
-      data: {
-        id: Math.floor(Math.random() * 1000), // Un ID aleatorio para el registro
-        userId: request.userId,
-        date: request.date,
-        hasAttended: request.hasAttended,
-      },
+    // Configuración por defecto de los mocks (pueden ser sobreescritos por prueba específica)
+    (api.supervision.getSupervisedCampers as jest.Mock).mockResolvedValue({ data: mockAcampantesList, success: true });
+    (api.supervision.getAllAcampantes as jest.Mock).mockResolvedValue({ data: mockAllAcampantesList, success: true });
+    (api.assistance.getForSupervisedCampers as jest.Mock).mockResolvedValue({ data: [], success: true });
+    (api.assistance.getByDate as jest.Mock).mockResolvedValue({ data: [], success: true });
+    (api.assistance.record as jest.Mock).mockImplementation(async (request: { userId: number; date: string; hasAttended: boolean }) => ({
+      data: { id: Math.random(), userId: request.userId, date: request.date, hasAttended: request.hasAttended },
       success: true,
     }));
-  });
+  };
 
-  test('renders loading state initially', () => {
-    render(<AssistancePage />);
-    expect(screen.getByText(/Cargando asistencia.../i)).toBeInTheDocument();
-  });
-
-  test('renders page title and date picker after loading', async () => {
-    render(<AssistancePage />);
-    await waitFor(() => {
-      expect(screen.getByText(/Gestión de Asistencia/i)).toBeInTheDocument();
-    });
-    expect(screen.getByLabelText(/Seleccionar Fecha:/i)).toBeInTheDocument();
-  });
-
-  test('fetches and displays campers for the selected date', async () => {
-    (api.assistance.getByDate as jest.Mock).mockResolvedValueOnce({
-      data: [
-        { id: 101, userId: 1, date: '2024-07-30', hasAttended: true, userName: 'Test User 1' },
-      ],
-      success: true,
-    });
-
-    render(<AssistancePage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Test User 1')).toBeInTheDocument();
-    });
-    expect(screen.getByText('Test User 2')).toBeInTheDocument(); // User 2 no tiene registro, pero se lista
-
-    // Test User 1 debería aparecer como presente
-    const user1Button = screen.getByRole('button', { name: /Marcar Ausente/i });
-    expect(user1Button).toBeInTheDocument();
-    expect(user1Button.closest('li')).toHaveClass('bg-green-100');
-
-
-    // Test User 2 debería aparecer como para marcar presente (o sin estado claro si es null)
-    const user2Button = screen.getAllByRole('button', { name: /Marcar Presente/i }).find(btn => btn.closest('li')?.textContent?.includes('Test User 2'));
-    expect(user2Button).toBeInTheDocument();
-    if (user2Button) { // Chequeo para TypeScript
-        expect(user2Button.closest('li')).toHaveClass('bg-gray-100'); // o bg-red-100 si hasAttended es false
-    }
-  });
-
-  test('allows changing the date and re-fetches assistance data', async () => {
-    render(<AssistancePage />);
-    await waitFor(() => {
-      expect(api.assistance.getByDate).toHaveBeenCalledTimes(1);
-    });
-
-    const dateInput = screen.getByLabelText(/Seleccionar Fecha:/i);
-    fireEvent.change(dateInput, { target: { value: '2024-08-01' } });
-
-    await waitFor(() => {
-      // Debería llamarse una vez por la carga inicial, y otra por el cambio de fecha
-      expect(api.assistance.getByDate).toHaveBeenCalledTimes(2);
-    });
-    expect(api.assistance.getByDate).toHaveBeenCalledWith('2024-08-01');
-  });
-
-  test('toggles assistance status when button is clicked', async () => {
-    // Mock para que Test User 1 inicialmente no tenga registro
-     (api.assistance.getByDate as jest.Mock).mockResolvedValueOnce({
-      data: [], // Sin registros iniciales
-      success: true,
-    });
-
-    render(<AssistancePage />);
-
-    let presentButtonForUser1: HTMLElement | undefined;
-    await waitFor(() => {
-      // Esperar a que se renderice el botón "Marcar Presente" para Test User 1
-      const buttons = screen.getAllByRole('button', { name: /Marcar Presente/i });
-      presentButtonForUser1 = buttons.find(btn => btn.closest('li')?.textContent?.includes('Test User 1'));
-      expect(presentButtonForUser1).toBeInTheDocument();
-    });
-     if (!presentButtonForUser1) throw new Error("Button not found");
-
-
-    fireEvent.click(presentButtonForUser1);
-
-    await waitFor(() => {
-      expect(api.assistance.record).toHaveBeenCalledTimes(1);
-    });
-    expect(api.assistance.record).toHaveBeenCalledWith({
-      userId: mockCampersList[0].id, // ID de Test User 1
-      date: new Date().toISOString().split('T')[0], // Fecha por defecto
-      hasAttended: true, // Se marcó como presente
-    });
-
-    // El botón debería cambiar a "Marcar Ausente"
-    const absentButtonForUser1 = screen.getByRole('button', { name: /Marcar Ausente/i });
-    expect(absentButtonForUser1).toBeInTheDocument();
-    expect(absentButtonForUser1.closest('li')).toHaveClass('bg-green-100');
-
-    // Hacer clic de nuevo para marcar como ausente
-    fireEvent.click(absentButtonForUser1);
-
-    await waitFor(() => {
-        expect(api.assistance.record).toHaveBeenCalledTimes(2);
-    });
-    expect(api.assistance.record).toHaveBeenCalledWith({
-        userId: mockCampersList[0].id,
-        date: new Date().toISOString().split('T')[0],
-        hasAttended: false, // Se marcó como ausente
-    });
-
-    // El botón debería volver a "Marcar Presente" y el fondo cambiar
-    const newPresentButtonForUser1 = screen.getByRole('button', { name: /Marcar Presente/i });
-    expect(newPresentButtonForUser1).toBeInTheDocument();
-    expect(newPresentButtonForUser1.closest('li')).toHaveClass('bg-red-100');
-  });
-
-  test('displays error message if fetching users fails', async () => {
-    (api.call as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch users'));
-    render(<AssistancePage />);
-    await waitFor(() => {
-      expect(screen.getByText(/Error al cargar la lista de campistas./i)).toBeInTheDocument();
-    });
-  });
-
-  test('displays error message if fetching assistance data fails', async () => {
-    (api.assistance.getByDate as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch assistance'));
-    render(<AssistancePage />);
-    await waitFor(() => {
-      // El error puede variar dependiendo de cómo se propague.
-      // Ajusta el texto si es necesario.
-      expect(screen.getByText(/Error al cargar los datos de asistencia./i)).toBeInTheDocument();
-    });
-  });
-
-   test('displays message when no user is logged in', () => {
-    (require('../../hooks/useLocalStorage').useLocalStorage as jest.Mock).mockReturnValue({
-      storedValue: null, // No user logged in
-    });
+  test('renders login message if no user is logged in', () => {
+    setupMocks(null);
     render(<AssistancePage />);
     expect(screen.getByText(/Por favor, inicia sesión para gestionar la asistencia./i)).toBeInTheDocument();
   });
 
-  test('displays message when no campers are available', async () => {
-    (api.call as jest.Mock).mockResolvedValue({ data: [], success: true }); // No campers
+  test('renders no permission message for simple user', () => {
+    setupMocks(mockUserSimple);
+    render(<AssistancePage />);
+    expect(screen.getByText(/No tienes permisos para gestionar la asistencia./i)).toBeInTheDocument();
+  });
+
+  describe('when logged in as DIRIGENTE', () => {
+    beforeEach(() => {
+      setupMocks(mockUserDirigente);
+    });
+
+    test('fetches and displays supervised campers and their assistance', async () => {
+      const assistanceForSupervised: AssistanceRecord[] = [
+        { id: 1, userId: 101, date: today, hasAttended: true, userName: 'Acampante Supervisado 1' },
+      ];
+      (api.assistance.getForSupervisedCampers as jest.Mock).mockResolvedValueOnce({ data: assistanceForSupervised, success: true });
+
+      render(<AssistancePage />);
+
+      await waitFor(() => {
+        expect(api.supervision.getSupervisedCampers).toHaveBeenCalledWith(mockUserDirigente.id);
+      });
+      await waitFor(() => {
+        expect(api.assistance.getForSupervisedCampers).toHaveBeenCalledWith(mockUserDirigente.id, today);
+      });
+
+      expect(screen.getByText('Acampante Supervisado 1')).toBeInTheDocument();
+      expect(screen.getByText('Acampante Supervisado 2')).toBeInTheDocument();
+      // Acampante 1 está presente
+      const acampante1Button = screen.getByRole('button', { name: /Marcar Ausente/i });
+      expect(acampante1Button.closest('li')?.textContent).toContain('Acampante Supervisado 1');
+      // Acampante 2 no tiene registro, debería estar para marcar presente
+      const acampante2Button = screen.getAllByRole('button', { name: /Marcar Presente/i }).find(btn => btn.closest('li')?.textContent?.includes('Acampante Supervisado 2'));
+      expect(acampante2Button).toBeInTheDocument();
+    });
+
+    test('toggles assistance for a supervised camper', async () => {
+        render(<AssistancePage />);
+        await waitFor(() => expect(screen.getByText('Acampante Supervisado 1')).toBeInTheDocument());
+
+        const presentButton = screen.getAllByRole('button', { name: /Marcar Presente/i }).find(btn => btn.closest('li')?.textContent?.includes('Acampante Supervisado 1'))!;
+        fireEvent.click(presentButton);
+
+        await waitFor(() => expect(api.assistance.record).toHaveBeenCalledWith({
+          userId: 101, date: today, hasAttended: true,
+        }));
+        expect(screen.getByRole('button', { name: /Marcar Ausente/i })).toBeInTheDocument();
+      });
+  });
+
+  describe('when logged in as ADMIN', () => {
+    beforeEach(() => {
+      setupMocks(mockUserAdmin);
+    });
+
+    test('fetches and displays all acampantes and their assistance', async () => {
+      const assistanceForAll: AssistanceRecord[] = [
+        { id: 1, userId: 101, date: today, hasAttended: false, userName: 'Acampante Supervisado 1' },
+        { id: 3, userId: 103, date: today, hasAttended: true, userName: 'Otro Acampante 3'},
+      ];
+      (api.assistance.getByDate as jest.Mock).mockResolvedValueOnce({ data: assistanceForAll, success: true });
+
+      render(<AssistancePage />);
+
+      await waitFor(() => {
+        expect(api.supervision.getAllAcampantes).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(api.assistance.getByDate).toHaveBeenCalledWith(today);
+      });
+
+      expect(screen.getByText('Acampante Supervisado 1')).toBeInTheDocument();
+      expect(screen.getByText('Otro Acampante 3')).toBeInTheDocument();
+
+      const acampante1Button = screen.getAllByRole('button', { name: /Marcar Presente/i }).find(btn => btn.closest('li')?.textContent?.includes('Acampante Supervisado 1'));
+      expect(acampante1Button).toBeInTheDocument();
+
+      const acampante3Button = screen.getAllByRole('button', { name: /Marcar Ausente/i }).find(btn => btn.closest('li')?.textContent?.includes('Otro Acampante 3'));
+      expect(acampante3Button).toBeInTheDocument();
+    });
+  });
+
+  describe('when logged in as STAFF', () => {
+    beforeEach(() => {
+      setupMocks(mockUserStaff);
+    });
+
+    test('fetches and displays all acampantes (similar to ADMIN)', async () => {
+      (api.assistance.getByDate as jest.Mock).mockResolvedValueOnce({ data: [], success: true }); // No specific assistance for this test
+
+      render(<AssistancePage />);
+
+      await waitFor(() => {
+        expect(api.supervision.getAllAcampantes).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(api.assistance.getByDate).toHaveBeenCalledWith(today);
+      });
+      expect(screen.getByText('Acampante Supervisado 1')).toBeInTheDocument();
+      expect(screen.getByText('Otro Acampante 3')).toBeInTheDocument();
+    });
+  });
+
+
+  test('allows changing date and re-fetches data accordingly (DIRIGENTE)', async () => {
+    setupMocks(mockUserDirigente);
+    render(<AssistancePage />);
+
+    await waitFor(() => expect(api.assistance.getForSupervisedCampers).toHaveBeenCalledWith(mockUserDirigente.id, today));
+
+    const newDate = '2024-08-15';
+    const dateInput = screen.getByLabelText(/Seleccionar Fecha:/i);
+    fireEvent.change(dateInput, { target: { value: newDate } });
+
+    await waitFor(() => expect(api.assistance.getForSupervisedCampers).toHaveBeenCalledWith(mockUserDirigente.id, newDate));
+    expect(api.assistance.getForSupervisedCampers).toHaveBeenCalledTimes(2); // Initial + change
+  });
+
+  test('displays error message if fetching campers list fails (DIRIGENTE)', async () => {
+    setupMocks(mockUserDirigente);
+    (api.supervision.getSupervisedCampers as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch supervised campers'));
     render(<AssistancePage />);
     await waitFor(() => {
-      expect(screen.getByText(/No hay campistas para mostrar/i)).toBeInTheDocument();
+      expect(screen.getByText(/Error: Failed to fetch supervised campers/i)).toBeInTheDocument();
+    });
+  });
+
+  test('displays error message if fetching assistance data fails (DIRIGENTE)', async () => {
+    setupMocks(mockUserDirigente);
+    (api.assistance.getForSupervisedCampers as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch assistance for supervised'));
+    render(<AssistancePage />);
+    await waitFor(() => {
+      // The error message might be generic "Error al cargar los datos de asistencia."
+      // or the specific one if not caught and re-thrown
+      expect(screen.getByText(/Error: Failed to fetch assistance for supervised/i)).toBeInTheDocument();
+    });
+  });
+
+  test('displays message when DIRIGENTE has no supervised campers', async () => {
+    setupMocks(mockUserDirigente);
+    (api.supervision.getSupervisedCampers as jest.Mock).mockResolvedValue({ data: [], success: true });
+    render(<AssistancePage />);
+    await waitFor(() => {
+      expect(screen.getByText(/No tienes acampantes supervisados para mostrar./i)).toBeInTheDocument();
+    });
+  });
+
+  test('displays message when ADMIN/STAFF find no acampantes', async () => {
+    setupMocks(mockUserAdmin);
+    (api.supervision.getAllAcampantes as jest.Mock).mockResolvedValue({ data: [], success: true });
+    render(<AssistancePage />);
+    await waitFor(() => {
+      expect(screen.getByText(/No hay acampantes para mostrar./i)).toBeInTheDocument();
     });
   });
 

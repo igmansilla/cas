@@ -165,3 +165,12 @@ export interface UserAssistanceOnDateRequest {
   userIds: number[];
   date: string; // ISO date string e.g., "2024-07-30"
 }
+
+// User Supervision
+export interface UserDto {
+  id: number;
+  username: string;
+  roles: string[];
+  // fullName?: string;
+  // email?: string;
+}

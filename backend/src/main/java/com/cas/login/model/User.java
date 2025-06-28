@@ -11,7 +11,9 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode; // Importar para excluir campos
 import lombok.NoArgsConstructor;
+import lombok.ToString; // Importar para excluir campos
 
 import com.cas.packinglist.model.PackingList; // Added import
 import jakarta.persistence.CascadeType; // Added import
@@ -50,6 +52,24 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<com.campassistant.model.Assistance> assistanceRecords = new HashSet<>();
+
+    // Relación para Dirigentes: Acampantes que supervisa un Dirigente
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_supervision",
+        joinColumns = @JoinColumn(name = "dirigente_id"), // El User que es Dirigente
+        inverseJoinColumns = @JoinColumn(name = "acampante_id") // El User que es Acampante supervisado
+    )
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<User> supervisedCampers = new HashSet<>();
+
+    // Relación para Acampantes: Dirigentes que supervisan a un Acampante
+    // 'mappedBy' indica que la tabla de unión es gestionada por la otra entidad (supervisedCampers)
+    @ManyToMany(mappedBy = "supervisedCampers", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<User> supervisors = new HashSet<>();
 
     // Constructor without id (for creation)
     public User(String username, String password) {
