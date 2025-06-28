@@ -311,3 +311,115 @@ vi.mock('../services/api', () => ({
 7. **Usar TypeScript** para todas las interfaces y tipos
 
 Este sistema proporciona una base sólida y escalable para el manejo de APIs en aplicaciones React modernas.
+
+## Backend API Endpoint Definitions
+
+Esta sección detalla los endpoints específicos del backend disponibles para la aplicación.
+
+### Packing List API
+
+#### 1. Get Packing List
+
+*   **Method:** `GET`
+*   **URL:** `/api/packing-list`
+*   **Description:** Retrieves the authenticated user's packing list. If no list exists for the user, a default/empty list structure may be returned by the backend (e.g., an object with a `null` or `undefined` `id` and empty `categories`).
+*   **Authentication:** Required (e.g., session cookie, JWT token via Authorization header). The specific mechanism depends on the backend Spring Security configuration.
+*   **Request Body:** None.
+*   **Response Body (Success - 200 OK):** `PackingListDto`
+    ```json
+    {
+      "id": 123, // Can be null if a new, never-saved list structure is returned
+      "categories": [
+        {
+          "id": 1,
+          "title": "Ropa",
+          "displayOrder": 0,
+          "items": [
+            {
+              "id": 101,
+              "text": "Mochila anatómica",
+              "isChecked": false,
+              "displayOrder": 0
+            }
+            // ... more items
+          ]
+        }
+        // ... more categories
+      ],
+      "createdAt": "2023-10-27T10:00:00Z", // ISO 8601 timestamp
+      "updatedAt": "2023-10-27T10:00:00Z"  // ISO 8601 timestamp
+    }
+    ```
+*   **Potential Error Status Codes:**
+    *   `401 Unauthorized`: If the user is not authenticated or the session/token is invalid.
+    *   `500 Internal Server Error`: If an unexpected server error occurs.
+
+#### 2. Save Packing List
+
+*   **Method:** `POST`
+*   **URL:** `/api/packing-list`
+*   **Description:** Saves or updates the authenticated user's packing list. The request should send the complete, current state of the packing list. If the list `id` in the payload is `null` or missing, a new list is created. If an `id` is provided, the existing list with that `id` (belonging to the user) is updated.
+*   **Authentication:** Required.
+*   **Request Body:** `PackingListDto`
+    ```json
+    {
+      "id": 123, // Null/undefined for a new list, existing ID for an update
+      "categories": [ // Send all categories and their items
+        {
+          "id": 1, // Null/undefined for a new category
+          "title": "Ropa (Actualizada)",
+          "displayOrder": 0,
+          "items": [
+            {
+              "id": 101, // Null/undefined for a new item
+              "text": "Mochila anatómica (Actualizada)",
+              "isChecked": true,
+              "displayOrder": 0
+            },
+            {
+              // For a completely new item, 'id' would be omitted or null
+              "text": "Nuevo Guante",
+              "isChecked": false,
+              "displayOrder": 1
+            }
+          ]
+        }
+      ],
+      "createdAt": null, // Typically ignored by the server on save, managed by backend
+      "updatedAt": null  // Typically ignored by the server on save, managed by backend
+    }
+    ```
+*   **Response Body (Success - 200 OK):** The saved `PackingListDto`, including any newly assigned `id`s (for the list, categories, or items) and updated `createdAt` / `updatedAt` timestamps.
+    ```json
+    {
+      "id": 123,
+      "categories": [
+        {
+          "id": 1,
+          "title": "Ropa (Actualizada)",
+          "displayOrder": 0,
+          "items": [
+            {
+              "id": 101,
+              "text": "Mochila anatómica (Actualizada)",
+              "isChecked": true,
+              "displayOrder": 0
+            },
+            {
+              "id": 102, // New ID assigned by backend
+              "text": "Nuevo Guante",
+              "isChecked": false,
+              "displayOrder": 1
+            }
+          ]
+        }
+      ],
+      "createdAt": "2023-10-27T10:00:00Z",
+      "updatedAt": "2023-10-27T10:05:00Z" // Updated timestamp
+    }
+    ```
+*   **Potential Error Status Codes:**
+    *   `400 Bad Request`: If the request body is malformed or fails validation (e.g., missing required fields like `text` for an item, though the DTO structure is quite flexible).
+    *   `401 Unauthorized`: If the user is not authenticated.
+    *   `404 Not Found`: If the user associated with the authentication context is not found in the database (this should be rare if authentication is successful). This could also apply if trying to update a list with an ID that doesn't belong to the user, though the current implementation might just create a new list for the user or ignore the ID.
+    *   `500 Internal Server Error`: If an unexpected server error occurs during processing or saving.

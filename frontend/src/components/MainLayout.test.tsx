@@ -119,10 +119,7 @@ describe('MainLayout', () => {
         expect(logoutButton.closest('button')).not.toBeDisabled();
 
 
-        fireEvent.click(logoutButton.closest('button')!);
-
-
-        await waitFor(() => {
+        fireEvent.click(logoutButton.closest('button')!);        await waitFor(() => {
             expect(fetch).toHaveBeenCalledWith('/logout', {
                 method: 'POST',
                  headers: {},

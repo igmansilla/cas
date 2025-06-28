@@ -1,0 +1,29 @@
+{
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#b7180a",
+    "titleBar.activeForeground": "#ffffff",
+    "titleBar.inactiveBackground": "#d63e2e",
+    "titleBar.inactiveForeground": "#ffbbb6",
+  },
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "keyword",
+        "settings": {
+          "foreground": "#b7180a"
+        }
+      },
+      {
+        "scope": "entity.name.function",
+        "settings": {
+          "foreground": "#b7180a"
+        }
+      }
+    ]
+  },
+  "editor.semanticHighlighting.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "workbench.iconTheme": "vs-seti"
+}

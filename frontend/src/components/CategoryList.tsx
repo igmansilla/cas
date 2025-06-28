@@ -10,85 +10,85 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
-import { PackingCategory } from "../types";
+import { PackingListCategoryDto, PackingListItemDto } from "../types/api"; // Import DTOs
 import { PackingItem } from "./PackingItem";
 
 interface CategoryListProps {
-  category: PackingCategory;
-  checkedItems: { [key: string]: boolean };
-  onToggleItem: (itemId: string) => void;
-  index: number;
-  onUpdateCategory: (newTitle: string) => void;
+  category: PackingListCategoryDto;
+  // checkedItems prop removed
+  onToggleItem: (itemId: number | undefined) => void; // itemId is number or undefined
+  index: number; // For category drag and drop
+  onUpdateCategoryTitle: (newTitle: string) => void; // Renamed for clarity from PackingListApp
   onDeleteCategory: () => void;
-  onAddItem: (item: string) => void;
-  onEditItem: (itemId: string, newText: string) => void; // Cambiado a itemId
-  onDeleteItem: (itemId: string) => void; // Cambiado a itemId
+  onAddItem: (itemText: string) => void; // itemText is string
+  onEditItem: (itemId: number | undefined, newText: string) => void;
+  onDeleteItem: (itemId: number | undefined) => void;
 }
 
 export function CategoryList({
   category,
-  checkedItems,
   onToggleItem,
   index,
-  onUpdateCategory,
+  onUpdateCategoryTitle,
   onDeleteCategory,
   onAddItem,
   onEditItem,
   onDeleteItem,
 }: CategoryListProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState(category.title);
-  const [newItem, setNewItem] = useState("");
-  const [editingItemIndex, setEditingItemIndex] = useState<string | null>(null);
-  const [editingItemText, setEditingItemText] = useState("");
+  const [newItemText, setNewItemText] = useState("");
+  const [editingItemId, setEditingItemId] = useState<number | undefined | null>(null); // Store item ID (number or undefined)
+  const [editingItemCurrentText, setEditingItemCurrentText] = useState("");
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const getItemId = (
-    categoryTitle: string,
-    item: { id: string; text: string }
-  ) => `${categoryTitle}-${item.id}`;
-
-  const progress = category.items.reduce((count, item) => {
-    const itemId = getItemId(category.title, item); // Usa el id directamente
-    return checkedItems[itemId] ? count + 1 : count;
-  }, 0);
-
-  const progressPercentage = (progress / category.items.length) * 100;
+  // Progress calculation based on item.isChecked
+  const checkedItemCount = category.items.filter(item => item.isChecked).length;
+  const progressPercentage = category.items.length > 0
+    ? (checkedItemCount / category.items.length) * 100
+    : 0;
 
   const handleSubmitTitle = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTitle.trim()) {
-      onUpdateCategory(newTitle.trim());
-      setIsEditing(false);
+      onUpdateCategoryTitle(newTitle.trim());
+      setIsEditingTitle(false);
     }
   };
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newItem.trim()) {
-      onAddItem(newItem.trim());
-      setNewItem("");
+    if (newItemText.trim()) {
+      onAddItem(newItemText.trim());
+      setNewItemText("");
     }
   };
 
-  const handleEditItem = (itemId: string) => {
-    const itemToEdit = category.items.find((item) => item.id === itemId);
-    if (itemToEdit) {
-      setEditingItemIndex(itemId); // Cambia para almacenar el ID en lugar del índice
-      setEditingItemText(itemToEdit.text);
-    }
+  const handleStartEditItem = (item: PackingListItemDto) => {
+    setEditingItemId(item.id);
+    setEditingItemCurrentText(item.text);
   };
 
-  const handleSaveItem = (itemId: string) => {
-    if (editingItemText.trim()) {
-      onEditItem(itemId, editingItemText.trim());
-      setEditingItemIndex(null); // Restablece el estado después de guardar
-      setEditingItemText(""); // Limpia el texto
+  const handleSaveItem = (itemId: number | undefined) => {
+    if (editingItemCurrentText.trim()) {
+      onEditItem(itemId, editingItemCurrentText.trim());
+      setEditingItemId(null);
+      setEditingItemCurrentText("");
     }
   };
+  
+  // DND IDs: Use category.id if available, otherwise a temporary ID for new categories.
+  // For items, use item.id if available. New items might not be draggable until persisted,
+  // or require a temporary client-side unique ID if dragging new items is needed.
+  // For simplicity, if category.id is undefined, dragging might be problematic or disabled by parent.
+  // Here, we'll assume category.id is defined for persisted categories to be draggable.
+  // If category.id is undefined, we use `new-category-${index}` as a fallback draggableId.
+  const categoryDraggableId = category.id !== undefined ? `category-${category.id}` : `new-category-${index}`;
+  const itemsDroppableId = category.id !== undefined ? `items-${category.id}` : `items-new-category-${index}`;
+
 
   return (
-    <Draggable draggableId={category.title} index={index}>
+    <Draggable draggableId={categoryDraggableId} index={index}>
       {(provided) => (
         <div
           ref={provided.innerRef}
@@ -100,7 +100,7 @@ export function CategoryList({
               className="flex-1 flex items-center gap-2"
               {...provided.dragHandleProps}
             >
-              {isEditing ? (
+              {isEditingTitle ? (
                 <form
                   onSubmit={handleSubmitTitle}
                   className="flex-1 flex gap-2"
@@ -122,7 +122,7 @@ export function CategoryList({
                   <button
                     type="button"
                     onClick={() => {
-                      setIsEditing(false);
+                      setIsEditingTitle(false);
                       setNewTitle(category.title);
                     }}
                     className="p-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
@@ -149,12 +149,13 @@ export function CategoryList({
                 </>
               )}
             </div>
-            {!isEditing && (
+            {!isEditingTitle && (
               <div className="flex gap-2">
                 <button
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => setIsEditingTitle(true)}
                   className="p-2 text-gray-600 hover:text-primary transition-colors"
                   title="Editar categoría"
+                  disabled={category.id === undefined} // Disable if category not persisted
                 >
                   <Pencil className="w-5 h-5" />
                 </button>
@@ -162,6 +163,7 @@ export function CategoryList({
                   onClick={onDeleteCategory}
                   className="p-2 text-gray-600 hover:text-primary transition-colors"
                   title="Eliminar categoría"
+                  disabled={category.id === undefined} // Disable if category not persisted
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -174,7 +176,7 @@ export function CategoryList({
               <div className="mb-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-1">
                   <span>
-                    {progress} de {category.items.length} items
+                    {checkedItemCount} de {category.items.length} items
                   </span>
                   <span>{Math.round(progressPercentage)}%</span>
                 </div>
@@ -192,8 +194,8 @@ export function CategoryList({
               >
                 <input
                   type="text"
-                  value={newItem}
-                  onChange={(e) => setNewItem(e.target.value)}
+                  value={newItemText}
+                  onChange={(e) => setNewItemText(e.target.value)}
                   className="flex-1 px-4 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                   placeholder="Agregar nuevo ítem..."
                 />
@@ -206,52 +208,50 @@ export function CategoryList({
                 </button>
               </form>
 
-              <Droppable
-                droppableId={`items-${category.title}`}
-                type={`items-${category.title}`}
-              >
-                {(provided) => (
+              <Droppable droppableId={itemsDroppableId} type="item"> {/* Consistent type="item" */}
+                {(providedDroppable) => (
                   <ul
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
+                    ref={providedDroppable.innerRef}
+                    {...providedDroppable.droppableProps}
                     className="space-y-2"
                   >
-                    {category.items.map((item) => {
-                      const itemId = getItemId(category.title, item);
+                    {category.items.map((item, itemIndex) => {
+                      // For items that are new (item.id is undefined), use a temporary draggableId.
+                      // Persisted items use `item-${item.id}`.
+                      const itemDraggableId = item.id !== undefined ? `item-${category.id}-${item.id}` : `new-item-${category.id}-${itemIndex}`;
                       return (
                         <Draggable
-                          key={itemId}
-                          draggableId={itemId}
-                          index={category.items.findIndex(
-                            (i) => i.id === item.id
-                          )}
+                          key={itemDraggableId} // key must be unique
+                          draggableId={itemDraggableId}
+                          index={itemIndex}
+                          isDragDisabled={item.id === undefined} // Optionally disable dragging for new, unpersisted items
                         >
-                          {(provided) => (
+                          {(providedDraggable) => (
                             <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
+                              ref={providedDraggable.innerRef}
+                              {...providedDraggable.draggableProps}
+                              {...providedDraggable.dragHandleProps}
                             >
-                              {editingItemIndex === item.id ? ( // Compara el id, no el índice
+                              {editingItemId === item.id ? (
                                 <div className="flex flex-col sm:flex-row gap-2 p-3 bg-gray-50 rounded-lg">
                                   <input
                                     type="text"
-                                    value={editingItemText}
+                                    value={editingItemCurrentText}
                                     onChange={(e) =>
-                                      setEditingItemText(e.target.value)
+                                      setEditingItemCurrentText(e.target.value)
                                     }
                                     className="flex-1 px-3 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     autoFocus
                                   />
                                   <div className="flex gap-2">
                                     <button
-                                      onClick={() => handleSaveItem(item.id)} // Usa el id aquí
+                                      onClick={() => handleSaveItem(item.id)}
                                       className="flex-1 sm:flex-none p-2 text-white bg-secondary rounded-lg hover:bg-secondary-dark transition-colors"
                                     >
                                       <Check className="w-5 h-5" />
                                     </button>
                                     <button
-                                      onClick={() => setEditingItemIndex(null)} // Cancela la edición
+                                      onClick={() => setEditingItemId(null)}
                                       className="flex-1 sm:flex-none p-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                                     >
                                       <X className="w-5 h-5" />
@@ -259,23 +259,19 @@ export function CategoryList({
                                   </div>
                                 </div>
                               ) : (
-                                <div className="group">
-                                  <PackingItem
-                                    text={item.text}
-                                    isChecked={checkedItems[itemId] || false}
-                                    onToggle={() => onToggleItem(itemId)}
-                                    onEdit={() => handleEditItem(item.id)} // Usa el id aquí
-                                    onDelete={() => onDeleteItem(item.id)} // Usa el id aquí
-                                  />
-                                </div>
+                                <PackingItem
+                                  item={item} // Pass the whole item DTO
+                                  onToggle={onToggleItem}
+                                  onEdit={() => handleStartEditItem(item)}
+                                  onDelete={onDeleteItem}
+                                />
                               )}
                             </div>
                           )}
                         </Draggable>
                       );
                     })}
-
-                    {provided.placeholder}
+                    {providedDroppable.placeholder}
                   </ul>
                 )}
               </Droppable>

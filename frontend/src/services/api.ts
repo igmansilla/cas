@@ -1,12 +1,13 @@
 // api.ts - Servicio centralizado de API con estándares de la industria
 
-import type { 
-  ApiResponse, 
-  LoginResponse
+import type {
+  ApiResponse,
+  LoginResponse,
+  PackingListDto, // Import the new DTO
 } from '../types/api';
 
 // Re-export para compatibilidad con código existente
-export type { ApiResponse, LoginResponse };
+export type { ApiResponse, LoginResponse, PackingListDto };
 export interface UserData {
   username: string;
   roles: string[];
@@ -55,6 +56,24 @@ const getCsrfToken = (): string | null => {
   return null;
 };
 
+// Helper para obtener credenciales de usuario
+const getUserCredentials = (): { username: string; password: string } | null => {
+  const userStr = localStorage.getItem('user');
+  if (!userStr) return null;
+  
+  try {
+    const user = JSON.parse(userStr);
+    // Asumimos que las credenciales se guardan temporalmente después del login
+    const credentials = localStorage.getItem('userCredentials');
+    if (!credentials) return null;
+    
+    const { username, password } = JSON.parse(credentials);
+    return { username, password };
+  } catch {
+    return null;
+  }
+};
+
 // Función base para hacer requests con manejo estándar de errores
 async function apiRequest<T>(
   endpoint: string,
@@ -65,6 +84,15 @@ async function apiRequest<T>(
   const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };
+
+  // Agregar autenticación HTTP Basic para endpoints de API
+  if (endpoint.startsWith('/api/')) {
+    const credentials = getUserCredentials();
+    if (credentials) {
+      const basicAuth = btoa(`${credentials.username}:${credentials.password}`);
+      defaultHeaders['Authorization'] = `Basic ${basicAuth}`;
+    }
+  }
 
   // Agregar token CSRF para requests que lo necesiten
   if (options.method && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method)) {
@@ -116,17 +144,19 @@ async function apiRequest<T>(
 // Función específica para login con formato especial
 export async function login(username: string, password: string): Promise<ApiResponse<LoginResponse>> {
   const csrfToken = getCsrfToken();
-  if (!csrfToken) {
-    throw new ApiError(400, 'CSRF token not found. Please refresh the page.');
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+  
+  // Solo agregar CSRF token si existe
+  if (csrfToken) {
+    headers['X-XSRF-TOKEN'] = csrfToken;
   }
-
   try {
-    const response = await fetch('/perform_login', {
+    const response = await fetch(`${API_BASE_URL}/perform_login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-XSRF-TOKEN': csrfToken,
-      },
+      headers,
       body: new URLSearchParams({ username, password }),
     });
 
@@ -135,6 +165,9 @@ export async function login(username: string, password: string): Promise<ApiResp
     if (!response.ok) {
       throw new ApiError(response.status, responseData.message || 'Login failed', responseData);
     }
+
+    // Guardar credenciales para autenticación HTTP Basic en endpoints API
+    localStorage.setItem('userCredentials', JSON.stringify({ username, password }));
 
     return {
       success: true,
@@ -152,7 +185,7 @@ export async function login(username: string, password: string): Promise<ApiResp
 // Función para logout
 export async function logout(): Promise<ApiResponse<void>> {
   try {
-    const response = await fetch('/logout', {
+    const response = await fetch(`${API_BASE_URL}/logout`, {
       method: 'POST',
       headers: {},
     });
@@ -161,12 +194,17 @@ export async function logout(): Promise<ApiResponse<void>> {
       console.warn('Backend logout failed, but proceeding with client-side logout');
     }
 
+    // Limpiar credenciales almacenadas
+    localStorage.removeItem('userCredentials');
+
     return {
       success: true,
       message: 'Logout successful',
     };
   } catch (error) {
     console.warn('Logout error:', error);
+    // Limpiar credenciales incluso si hay error
+    localStorage.removeItem('userCredentials');
     return {
       success: true,
       message: 'Logout completed (with backend error)',
@@ -213,6 +251,15 @@ export const api = {
     }),
     delete: (id: number) => apiRequest<unknown>(`/api/dirigentes/${id}`, {
       method: 'DELETE',
+    }),
+  },
+
+  // Packing List
+  packingList: {
+    get: () => apiRequest<PackingListDto>('/api/packing-list'),
+    save: (data: PackingListDto) => apiRequest<PackingListDto>('/api/packing-list', {
+      method: 'POST',
+      body: JSON.stringify(data),
     }),
   },
 

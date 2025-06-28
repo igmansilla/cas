@@ -39,29 +39,6 @@ src/main/java/com/cas/login/
 | **DIRIGENTE** | Líder de campamento | Gestión de acampantes, funciones organizativas |
 | **USER** | Usuario básico | Acceso limitado a funcionalidades específicas |
 
-### Endpoints de API
-
-#### Públicos (sin autenticación)
-- `GET /api/status` - Estado del servicio
-- `GET /api/health` - Verificación de salud
-
-#### Autenticados
-- `GET /api/user/me` - Información del usuario actual
-- `POST /api/logout` - Cerrar sesión
-
-#### Para DIRIGENTE y ADMIN
-- `GET /api/acampantes` - Listar acampantes
-- `POST /api/acampantes` - Crear acampante
-- `PUT /api/acampantes/{id}` - Actualizar acampante
-- `DELETE /api/acampantes/{id}` - Eliminar acampante
-
-#### Solo ADMIN
-- `GET /api/dirigentes` - Listar dirigentes
-- `POST /api/dirigentes` - Crear dirigente
-- `PUT /api/dirigentes/{id}` - Actualizar dirigente
-- `DELETE /api/dirigentes/{id}` - Eliminar dirigente
-- `GET /api/admin/**` - Funciones administrativas
-
 ## 🚀 Desarrollo y Ejecución
 
 ### Prerrequisitos
@@ -87,7 +64,7 @@ src/main/java/com/cas/login/
    ./gradlew bootRun
    ```
 
-La aplicación estará disponible en `http://localhost:8080`
+La aplicación estará disponible en `http://localhost:8082`
 
 ### Comandos de Desarrollo
 
@@ -127,9 +104,9 @@ Host: localhost
 
 El sistema incluye un `DataInitializer` que crea usuarios y roles de ejemplo:
 
-- **Admin**: `admin@cas.com` / `admin123`
-- **Dirigente**: `dirigente@cas.com` / `dirigente123`
-- **Usuario**: `user@cas.com` / `user123`
+- **Admin**: `admin` / `adminpass`
+- **Dirigente**: `dirigente1` / `dirigentepass`
+- **Super Dirigente**: `superdirigente` / `superpass` (DIRIGENTE + ADMIN)
 
 ## 🔧 Configuración
 
@@ -144,7 +121,7 @@ DB_USERNAME=myuser
 DB_PASSWORD=mypassword
 
 # Servidor
-SERVER_PORT=8080
+SERVER_PORT=8082
 
 # Logging
 LOGGING_LEVEL_ROOT=INFO
@@ -163,19 +140,89 @@ LOGGING_LEVEL_ROOT=INFO
 
 ## 📝 Autenticación
 
-### Login via API
+El sistema utiliza **Spring Security** con múltiples formas de autenticación según el tipo de endpoint:
+
+### 🔐 Métodos de Autenticación
+
+#### 1. **HTTP Basic Authentication** (Para APIs `/api/**`)
+```bash
+# Autenticación HTTP Basic para endpoints de API
+curl -X GET http://localhost:8082/api/user/me \
+  -H "Authorization: Basic $(echo -n 'admin:adminpass' | base64)"
+```
+
+#### 2. **Form Login** (Para autenticación web)
+```bash
+# Login via formulario
+curl -X POST http://localhost:8082/perform_login \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin&password=adminpass"
+```
+
+### 👥 Usuarios de Prueba
+
+| Username | Contraseña | Rol | Permisos |
+|----------|------------|-----|----------|
+| `admin` | `adminpass` | **ADMIN** | Acceso completo |
+| `dirigente1` | `dirigentepass` | **DIRIGENTE** | Gestión de acampantes |
+| `superdirigente` | `superpass` | **DIRIGENTE + ADMIN** | Acceso completo + gestión |
+
+### 🔧 Autenticación en Swagger UI
+
+Para usar Swagger UI con autenticación:
+
+1. **Abre Swagger UI:**
+   ```
+   http://localhost:8082/swagger-ui/index.html
+   ```
+
+2. **Autentícate usando HTTP Basic:**
+   - Haz clic en el botón **"Authorize"** 🔒 (esquina superior derecha)
+   - En el modal que se abre, busca **"basicScheme (http, Basic)"**
+   - Ingresa las credenciales:
+     - **Username:** `admin`
+     - **Password:** `adminpass`
+   - Haz clic en **"Authorize"**
+   - Haz clic en **"Close"**
+
+3. **Ahora podrás probar todos los endpoints protegidos directamente desde Swagger UI**
+
+### 📊 Endpoints por Rol
+
+#### 🔓 **Públicos** (Sin autenticación)
+- `GET /api/status` - Estado de la aplicación
+- `GET /api/health` - Health check
+
+#### 👤 **USER** (Autenticación requerida)
+- `GET /api/user/me` - Información del usuario actual
+
+#### 👨‍🏫 **DIRIGENTE** (Rol DIRIGENTE o ADMIN)
+- `GET /api/acampantes/**` - Gestión de acampantes
+- `GET /api/packing-list/**` - Listas de equipaje
+
+#### 🔑 **ADMIN** (Solo ADMIN)
+- `GET /api/dirigentes/**` - Gestión de dirigentes
+- `GET /api/admin/**` - Funciones administrativas
+
+### 🧪 Pruebas de Autenticación
 
 ```bash
-# Autenticación HTTP Basic
-curl -X POST http://localhost:8080/perform_login \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=admin@cas.com&password=admin123"
+# Verificar acceso sin autenticación (debería fallar)
+curl -X GET http://localhost:8082/api/user/me
+
+# Verificar acceso con credenciales válidas
+curl -X GET http://localhost:8082/api/user/me \
+  -u "admin:adminpass"
+
+# Verificar logout
+curl -X POST http://localhost:8082/api/logout \
+  -u "admin:adminpass"
 ```
 
 ### Respuesta de Login Exitoso
 ```json
 {
-  "username": "admin@cas.com",
+  "username": "admin",
   "roles": ["ROLE_ADMIN"],
   "success": true,
   "message": "Authentication successful"
@@ -195,19 +242,6 @@ curl -X POST http://localhost:8080/perform_login \
 # Tests con reporte
 ./gradlew test jacocoTestReport
 ```
-
-### Tests de Seguridad
-Los tests incluyen verificación de:
-- Autenticación correcta
-- Autorización por roles
-- Respuestas de error apropiadas
-- Protección de endpoints
-
-## 📚 Documentación Adicional
-
-- [Configuración de Seguridad Detallada](./src/main/java/com/cas/login/config/README.md)
-- [Módulo de Login](./src/main/java/com/cas/login/README.md)
-
 ## 🐛 Debugging
 
 ### Logs útiles
@@ -241,7 +275,7 @@ java -jar build/libs/login-service-0.0.1-SNAPSHOT.jar
 docker build -t campamentos-backend .
 
 # Ejecutar contenedor
-docker run -p 8080:8080 campamentos-backend
+docker run -p 8082:8082 campamentos-backend
 ```
 
 ## 🤝 Contribución

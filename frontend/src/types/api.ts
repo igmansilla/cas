@@ -115,3 +115,25 @@ export interface ApiListState<T> {
   error: string | null;
   pagination: PaginationInfo;
 }
+
+// Packing List
+export interface PackingListItemDto {
+  id?: number; // Optional for new items not yet saved
+  text: string;
+  isChecked: boolean;
+  displayOrder: number;
+}
+
+export interface PackingListCategoryDto {
+  id?: number; // Optional for new categories not yet saved
+  title: string;
+  displayOrder: number;
+  items: PackingListItemDto[];
+}
+
+export interface PackingListDto {
+  id?: number; // Optional if the list itself is new
+  categories: PackingListCategoryDto[];
+  createdAt?: string; // ISO date string
+  updatedAt?: string; // ISO date string
+}

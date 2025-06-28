@@ -21,8 +21,7 @@ public class SecurityEndpoints {
      * @param auth el configurador de autorización de Spring Security
      */
     public static void configureApiEndpoints(
-            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
-        auth
+            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {        auth
             // Endpoints públicos - accesibles sin autenticación
             .requestMatchers("/api/status", "/api/health").permitAll()
             
@@ -31,6 +30,9 @@ public class SecurityEndpoints {
             
             // Endpoints de dirigentes - solo para ADMIN
             .requestMatchers("/api/dirigentes/**").hasRole(SecurityRoles.ADMIN)
+            
+            // Endpoints de packing-list - requieren rol DIRIGENTE o ADMIN
+            .requestMatchers("/api/packing-list/**").hasAnyRole(SecurityRoles.DIRIGENTE, SecurityRoles.ADMIN)
             
             // Endpoints administrativos - solo para ADMIN
             .requestMatchers("/api/admin/**").hasRole(SecurityRoles.ADMIN)
