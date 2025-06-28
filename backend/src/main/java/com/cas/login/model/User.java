@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 import com.cas.packinglist.model.PackingList; // Added import
 import jakarta.persistence.CascadeType; // Added import
 import jakarta.persistence.OneToOne; // Added import
+import jakarta.persistence.OneToMany; // Added import for Assistance relationship
 
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +47,9 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PackingList packingList;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<com.campassistant.model.Assistance> assistanceRecords = new HashSet<>();
 
     // Constructor without id (for creation)
     public User(String username, String password) {
