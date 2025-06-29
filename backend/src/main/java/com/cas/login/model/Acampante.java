@@ -8,8 +8,9 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-// Potentially: import jakarta.persistence.ManyToOne;
-// Potentially: import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.CascadeType;
 
 @Entity
 @Table(name = "acampantes")
@@ -27,10 +28,9 @@ public class Acampante {
     private String contactoEmergenciaNombre;
     private String contactoEmergenciaTelefono;
 
-    // Optional: Link to a Dirigente who registered them, or to a group.
-    // @ManyToOne
-    // @JoinColumn(name = "dirigente_responsable_id")
-    // private Dirigente dirigenteResponsable;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true, nullable = true)
+    private User userAccount;
 
     // Constructor without id (for creation)
     public Acampante(String nombreCompleto, int edad, String contactoEmergenciaNombre, String contactoEmergenciaTelefono) {
@@ -38,5 +38,14 @@ public class Acampante {
         this.edad = edad;
         this.contactoEmergenciaNombre = contactoEmergenciaNombre;
         this.contactoEmergenciaTelefono = contactoEmergenciaTelefono;
+    }
+
+    // Constructor to also include UserAccount
+    public Acampante(String nombreCompleto, int edad, String contactoEmergenciaNombre, String contactoEmergenciaTelefono, User userAccount) {
+        this.nombreCompleto = nombreCompleto;
+        this.edad = edad;
+        this.contactoEmergenciaNombre = contactoEmergenciaNombre;
+        this.contactoEmergenciaTelefono = contactoEmergenciaTelefono;
+        this.userAccount = userAccount;
     }
 }

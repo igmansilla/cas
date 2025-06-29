@@ -7,7 +7,9 @@ import type {
   AssistanceRecord,
   AssistanceRecordRequest,
   UserAssistanceOnDateRequest,
-  UserDto, // Añadir UserDto
+  NewAcampanteCreateRequest, // Added
+  NewAcampanteResponse,   // Added
+  UserDto,
 } from '../types/api';
 
 // Re-export para compatibilidad con código existente
@@ -18,7 +20,9 @@ export type {
   AssistanceRecord,
   AssistanceRecordRequest,
   UserAssistanceOnDateRequest,
-  UserDto, // Añadir UserDto
+  NewAcampanteCreateRequest, // Added
+  NewAcampanteResponse,   // Added
+  UserDto,
 };
 export interface UserData {
   username: string;
@@ -264,6 +268,12 @@ export const api = {
     delete: (id: number) => apiRequest<unknown>(`/api/dirigentes/${id}`, {
       method: 'DELETE',
     }),
+    // New method for a Dirigente to create an Acampante
+    createAcampanteByDirigente: (data: NewAcampanteCreateRequest) =>
+      apiRequest<NewAcampanteResponse>('/api/dirigentes/me/acampantes', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   },
 
   // Packing List

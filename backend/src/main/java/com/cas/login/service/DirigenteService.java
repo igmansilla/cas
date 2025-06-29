@@ -1,21 +1,25 @@
 package com.cas.login.service;
 
+import com.cas.login.dto.AcampanteCreateRequest;
+import com.cas.login.model.Acampante;
 import com.cas.login.model.Dirigente;
 import com.cas.login.model.Role;
 import com.cas.login.model.User;
 import com.cas.login.repository.DirigenteRepository;
 import com.cas.login.repository.RoleRepository;
-import com.cas.login.repository.UserRepository; // Needed for user creation
+import com.cas.login.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder; // Needed for encoding password
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+// import org.springframework.security.access.AccessDeniedException; // For more specific exception if needed
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors; // Required for stream operations if using loop fallback
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class DirigenteService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AcampanteService acampanteService; // Added AcampanteService
 
     @Transactional
     public Dirigente createDirigente(Dirigente dirigente, String rawPassword, Set<String> roleNames) {
@@ -38,19 +43,13 @@ public class DirigenteService {
         User user = dirigente.getUserAccount();
         user.setPassword(passwordEncoder.encode(rawPassword));
 
-        // Assuming RoleRepository has findAllByNameIn method.
-        // If not, this would require a loop and multiple findByName calls.
         Set<Role> roles = roleRepository.findAllByNameIn(roleNames);
         if (roles.size() != roleNames.size()) {
-           // Identify which roles were not found for a more specific error message.
            Set<String> foundRoleNames = roles.stream().map(Role::getName).collect(Collectors.toSet());
            roleNames.removeAll(foundRoleNames);
            throw new RuntimeException("One or more roles not found: " + roleNames);
         }
         user.setRoles(roles);
-
-        // User account is part of Dirigente and CascadeType.ALL is set on userAccount field in Dirigente entity.
-        // So, saving Dirigente should cascade save to User.
         return dirigenteRepository.save(dirigente);
     }
 
@@ -73,8 +72,6 @@ public class DirigenteService {
 
         existingDirigente.setNombreCompleto(dirigenteDetails.getNombreCompleto());
         existingDirigente.setResponsabilidades(dirigenteDetails.getResponsabilidades());
-        // User account details (username, password, roles) update would be more complex and typically handled
-        // via a dedicated UserService or UserAccount management endpoint, often not directly through Dirigente update.
         return dirigenteRepository.save(existingDirigente);
     }
 
@@ -83,6 +80,32 @@ public class DirigenteService {
         if (!dirigenteRepository.existsById(id)) {
             throw new RuntimeException("Dirigente not found with id: " + id);
         }
-        dirigenteRepository.deleteById(id); // User account should be deleted due to CascadeType.ALL and orphanRemoval=true on Dirigente.userAccount
+        dirigenteRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Acampante createAcampanteForDirigente(AcampanteCreateRequest acampanteCreateRequest) {
+        String currentDirigenteUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentDirigenteUser = userRepository.findByUsername(currentDirigenteUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Dirigente user not found: " + currentDirigenteUsername));
+
+        // Optional: Check if currentDirigenteUser is actually a Dirigente by fetching Dirigente entity
+        // dirigenteRepository.findByUserAccount_Id(currentDirigenteUser.getId())
+        //    .orElseThrow(() -> new AccessDeniedException("Authenticated user is not a registered Dirigente."));
+
+
+        Acampante newAcampante = acampanteService.createAcampante(acampanteCreateRequest);
+        User newAcampanteUser = newAcampante.getUserAccount();
+
+        if (newAcampanteUser == null) {
+            throw new IllegalStateException("Acampante user account was not created successfully by AcampanteService.");
+        }
+
+        currentDirigenteUser.getSupervisedCampers().add(newAcampanteUser);
+        // newAcampanteUser.getSupervisors().add(currentDirigenteUser); // This line is not needed due to mappedBy
+
+        userRepository.save(currentDirigenteUser); // Save changes to the Dirigente's user entity
+
+        return newAcampante;
     }
 }

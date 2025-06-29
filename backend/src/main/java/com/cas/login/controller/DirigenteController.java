@@ -1,13 +1,22 @@
 package com.cas.login.controller;
 
 import com.cas.login.model.Dirigente;
-import com.cas.login.model.User; // For User in DTO
+import com.cas.login.model.User;
+import com.cas.login.model.Role;
+import com.cas.login.model.Acampante;
 import com.cas.login.service.DirigenteService;
+import com.cas.login.dto.AcampanteCreateRequest;
+import com.cas.login.dto.AcampanteResponse;
+import io.swagger.v3.oas.annotations.Operation; // Swagger
+import io.swagger.v3.oas.annotations.media.Content; // Swagger
+import io.swagger.v3.oas.annotations.media.Schema; // Swagger
+import io.swagger.v3.oas.annotations.responses.ApiResponse; // Swagger
+import io.swagger.v3.oas.annotations.tags.Tag; // Swagger
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.factory.annotation.Autowired; // Not needed with RequiredArgsConstructor
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,10 +28,11 @@ import java.util.stream.Collectors;
 
 // --- DTOs for Dirigente ---
 // (Typically in their own files, but here for brevity in the subtask)
+// Consider moving these to com.cas.login.dto package for consistency
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-class DirigenteCreateRequest {
+class DirigenteCreateRequest { // This DTO is an inner class
     public String nombreCompleto;
     public String responsabilidades;
     public String username;
@@ -33,7 +43,7 @@ class DirigenteCreateRequest {
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-class DirigenteResponse {
+class DirigenteResponse { // This DTO is an inner class
     public Long id;
     public String nombreCompleto;
     public String responsabilidades;
@@ -49,7 +59,7 @@ class DirigenteResponse {
             dto.username = dirigente.getUserAccount().getUsername();
             if (dirigente.getUserAccount().getRoles() != null) {
                 dto.roles = dirigente.getUserAccount().getRoles().stream()
-                                .map(role -> role.getName())
+                                .map(Role::getName) // Method reference
                                 .collect(Collectors.toSet());
             }
         }
@@ -60,7 +70,7 @@ class DirigenteResponse {
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-class DirigenteUpdateRequest {
+class DirigenteUpdateRequest { // This DTO is an inner class
     public String nombreCompleto;
     public String responsabilidades;
 }
@@ -69,10 +79,16 @@ class DirigenteUpdateRequest {
 @RestController
 @RequestMapping("/api/dirigentes")
 @RequiredArgsConstructor
+@Tag(name = "Dirigente Management", description = "Endpoints for managing Dirigentes and their supervised Acampantes.")
 public class DirigenteController {
 
     private final DirigenteService dirigenteService;
 
+    @Operation(summary = "Create a new Dirigente user",
+               description = "Allows an ADMIN to create a new Dirigente, which also creates an associated User account.")
+    @ApiResponse(responseCode = "201", description = "Dirigente created successfully",
+                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = DirigenteResponse.class)))
+    // Add other ApiResponses for 400, 403 etc. if desired
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DirigenteResponse> createDirigente(@RequestBody DirigenteCreateRequest createRequest) {
@@ -102,7 +118,6 @@ public class DirigenteController {
     @GetMapping("/byUsername/{username}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRIGENTE')") // Or just for the user themselves
     public ResponseEntity<DirigenteResponse> getDirigenteByUsername(@PathVariable String username) {
-        // Add logic here to check if the authenticated user is requesting their own data if not ADMIN/DIRIGENTE for all
         return dirigenteService.getDirigenteByUsername(username)
                 .map(dirigente -> ResponseEntity.ok(DirigenteResponse.fromEntity(dirigente)))
                 .orElse(ResponseEntity.notFound().build());
@@ -123,5 +138,27 @@ public class DirigenteController {
     public ResponseEntity<Void> deleteDirigente(@PathVariable Long id) {
         dirigenteService.deleteDirigente(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // New endpoint for a Dirigente to create an Acampante
+    @Operation(summary = "Register a new Acampante supervised by the current Dirigente",
+               description = "Allows an authenticated Dirigente to create a new Acampante. This also creates an associated User account for the Acampante with ROLE_ACAMPANTE and links them for supervision by the calling Dirigente.")
+    @ApiResponse(responseCode = "201", description = "Acampante registered successfully",
+                 content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = AcampanteResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid request data (e.g., missing fields, username taken, role not found). Body may contain error details.",
+                 content = @Content(mediaType = "application/json")) // Adjust schema if a specific error DTO is used
+    @ApiResponse(responseCode = "401", description = "Unauthorized (not logged in or invalid credentials).",
+                 content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "403", description = "Forbidden (user is authenticated but does not have ROLE_DIRIGENTE).",
+                 content = @Content(mediaType = "application/json"))
+    @PostMapping("/me/acampantes")
+    @PreAuthorize("hasRole('DIRIGENTE')")
+    public ResponseEntity<AcampanteResponse> createAcampanteByDirigente(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Details of the Acampante to create. 'password' is optional; if not provided, the backend will generate one.", required = true,
+                    content = @Content(schema = @Schema(implementation = AcampanteCreateRequest.class)))
+            @org.springframework.web.bind.annotation.RequestBody AcampanteCreateRequest createRequest) {
+        Acampante createdAcampante = dirigenteService.createAcampanteForDirigente(createRequest);
+        return new ResponseEntity<>(AcampanteResponse.fromEntity(createdAcampante), HttpStatus.CREATED);
     }
 }
