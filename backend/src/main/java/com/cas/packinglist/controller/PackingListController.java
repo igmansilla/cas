@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 // Assuming a custom UserDetails implementation that holds the ID.
 // Import the UserDetailsImpl from the specified path if it exists and is used.
-import com.cas.login.security.services.UserDetailsImpl; // Adjusted path based on typical project structure
+import com.cas.login.security.UserDetailsImpl; // Adjusted path based on typical project structure
 
 @RestController
 @RequestMapping("/api/packing-list")
@@ -87,7 +87,8 @@ public class PackingListController {
     }
 
     @GetMapping
-    public ResponseEntity<PackingListDto> getPackingList() {        try {
+    public ResponseEntity<PackingListDto> getPackingList() {
+        try {
             Long userId = getCurrentUserId();
             PackingListDto packingListDto = packingListService.getPackingListForUser(userId);
             return ResponseEntity.ok(packingListDto);
@@ -101,7 +102,8 @@ public class PackingListController {
     }
 
     @PostMapping
-    public ResponseEntity<PackingListDto> savePackingList(@RequestBody PackingListDto packingListDto) {        try {
+    public ResponseEntity<PackingListDto> savePackingList(@RequestBody PackingListDto packingListDto) {
+        try {
             Long userId = getCurrentUserId();
             PackingListDto savedPackingListDto = packingListService.savePackingListForUser(userId, packingListDto);
             return ResponseEntity.ok(savedPackingListDto);
@@ -112,7 +114,9 @@ public class PackingListController {
             // Handle issues getting user ID
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); // Or an error DTO
         }
-    }    // Optional: Exception handler for ResourceNotFoundException from the service
+    }
+
+    // Optional: Exception handler for ResourceNotFoundException from the service
     // This can be defined here or in a @ControllerAdvice class
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {

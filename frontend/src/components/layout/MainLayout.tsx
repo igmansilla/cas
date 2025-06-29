@@ -112,7 +112,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               >
                 Mis Actividades (Campista)
               </NavLink>
-            )}            {/* Common Links */}
+            )}            {/* Conditional Link for ROLE_DIRIGENTE, ROLE_ADMIN, or ROLE_STAFF */}
+            {(hasRole('ROLE_DIRIGENTE') || hasRole('ROLE_ADMIN') || hasRole('ROLE_STAFF')) && (
+              <NavLink
+                to="/asistencia"
+                className={({ isActive }) =>
+                  `block px-4 py-2.5 rounded-lg shadow-sm transition-colors duration-150 ease-in-out ${
+                    isActive ? 'bg-primary-dark text-white font-medium' : 'text-gray-300 hover:bg-primary-dark hover:text-white'
+                  }`
+                }
+              >
+                Control de Asistencia
+              </NavLink>
+            )}
+
+            {/* Common Links */}
             <NavLink
               to="/eventos"
               className={({ isActive }) =>
