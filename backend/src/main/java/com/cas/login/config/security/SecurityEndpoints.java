@@ -1,4 +1,4 @@
-package com.cas.login.config;
+package com.cas.login.config.security;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
@@ -27,6 +27,9 @@ public class SecurityEndpoints {
             
             // Endpoints de acampantes - requieren rol DIRIGENTE o ADMIN
             .requestMatchers("/api/acampantes/**").hasAnyRole(SecurityRoles.DIRIGENTE, SecurityRoles.ADMIN)
+            
+            // Endpoints de asistencias - requieren rol DIRIGENTE o ADMIN
+            .requestMatchers("/api/asistencias/**").hasAnyRole(SecurityRoles.DIRIGENTE, SecurityRoles.ADMIN)
             
             // Endpoints de dirigentes - solo para ADMIN
             .requestMatchers("/api/dirigentes/**").hasRole(SecurityRoles.ADMIN)

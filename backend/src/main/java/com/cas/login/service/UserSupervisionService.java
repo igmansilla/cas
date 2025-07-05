@@ -130,4 +130,30 @@ public class UserSupervisionService {
                 .filter(user -> user.getRoles().contains(acampanteRole))
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Verifica si un dirigente específico supervisa a un acampante específico
+     * 
+     * @param dirigenteId ID del dirigente
+     * @param acampanteId ID del acampante
+     * @return true si el dirigente supervisa al acampante, false en caso contrario
+     */
+    @Transactional(readOnly = true)
+    public boolean dirigenteSuperviseAcampante(Long dirigenteId, Long acampanteId) {
+        if (dirigenteId == null || acampanteId == null) {
+            return false;
+        }
+
+        User dirigente = userRepository.findById(dirigenteId).orElse(null);
+        if (dirigente == null || !dirigente.getRoles().contains(getDirigenteRole())) {
+            return false;
+        }
+
+        User acampante = userRepository.findById(acampanteId).orElse(null);
+        if (acampante == null || !acampante.getRoles().contains(getAcampanteRole())) {
+            return false;
+        }
+
+        return dirigente.getSupervisedCampers().contains(acampante);
+    }
 }

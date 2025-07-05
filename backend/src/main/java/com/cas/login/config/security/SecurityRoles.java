@@ -1,4 +1,4 @@
-package com.cas.login.config;
+package com.cas.login.config.security;
 
 /**
  * Constantes para los roles de seguridad del sistema.

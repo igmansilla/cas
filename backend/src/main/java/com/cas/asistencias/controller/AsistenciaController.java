@@ -3,6 +3,7 @@ package com.cas.asistencias.controller;
 import com.cas.asistencias.dto.AsistenciaDto;
 import com.cas.asistencias.dto.ReporteAsistenciaDto;
 import com.cas.asistencias.service.AsistenciaService;
+import com.cas.asistencias.service.AsistenciaSecurityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,8 +24,10 @@ import java.util.List;
 public class AsistenciaController {
 
     private final AsistenciaService asistenciaService;
+    private final AsistenciaSecurityService asistenciaSecurityService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @asistenciaSecurityService.puedeGestionarAsistencia(#asistenciaDto.usuarioId, authentication))")
     @Operation(summary = "Registrar asistencia", description = "Registra la asistencia de un usuario a una reunión")
     public ResponseEntity<AsistenciaDto> registrarAsistencia(@RequestBody AsistenciaDto asistenciaDto) {
         log.info("Registrando asistencia para usuario {} en reunión {}", 
@@ -33,6 +37,7 @@ public class AsistenciaController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @asistenciaSecurityService.puedeGestionarAsistenciaPorId(#id, authentication))")
     @Operation(summary = "Actualizar asistencia")
     public ResponseEntity<AsistenciaDto> actualizarAsistencia(
             @Parameter(description = "ID de la asistencia") @PathVariable Long id,
@@ -43,6 +48,7 @@ public class AsistenciaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @asistenciaSecurityService.puedeGestionarAsistenciaPorId(#id, authentication))")
     @Operation(summary = "Eliminar asistencia")
     public ResponseEntity<Void> eliminarAsistencia(
             @Parameter(description = "ID de la asistencia") @PathVariable Long id) {
@@ -52,6 +58,7 @@ public class AsistenciaController {
     }
 
     @GetMapping("/reunion/{reunionId}")
+    @PreAuthorize("hasAnyRole('DIRIGENTE', 'ADMIN')")
     @Operation(summary = "Obtener asistencias por reunión")
     public ResponseEntity<List<AsistenciaDto>> obtenerAsistenciasPorReunion(
             @Parameter(description = "ID de la reunión") @PathVariable Long reunionId) {
@@ -61,6 +68,7 @@ public class AsistenciaController {
     }
 
     @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @asistenciaSecurityService.puedeGestionarAsistencia(#usuarioId, authentication))")
     @Operation(summary = "Obtener asistencias por usuario")
     public ResponseEntity<List<AsistenciaDto>> obtenerAsistenciasPorUsuario(
             @Parameter(description = "ID del usuario") @PathVariable Long usuarioId) {
@@ -70,6 +78,7 @@ public class AsistenciaController {
     }
 
     @GetMapping("/reunion/{reunionId}/usuario/{usuarioId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @asistenciaSecurityService.puedeGestionarAsistencia(#usuarioId, authentication))")
     @Operation(summary = "Obtener asistencia específica")
     public ResponseEntity<AsistenciaDto> obtenerAsistencia(
             @Parameter(description = "ID de la reunión") @PathVariable Long reunionId,
@@ -80,6 +89,7 @@ public class AsistenciaController {
     }
 
     @GetMapping("/reporte/reunion/{reunionId}")
+    @PreAuthorize("hasAnyRole('DIRIGENTE', 'ADMIN')")
     @Operation(summary = "Generar reporte de asistencia", description = "Genera un reporte completo de asistencia para una reunión")
     public ResponseEntity<ReporteAsistenciaDto> generarReporteAsistencia(
             @Parameter(description = "ID de la reunión") @PathVariable Long reunionId) {
@@ -89,6 +99,7 @@ public class AsistenciaController {
     }
 
     @GetMapping("/historial/usuario/{usuarioId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @asistenciaSecurityService.puedeGestionarAsistencia(#usuarioId, authentication))")
     @Operation(summary = "Obtener historial de asistencias de un usuario")
     public ResponseEntity<List<AsistenciaDto>> obtenerHistorialUsuario(
             @Parameter(description = "ID del usuario") @PathVariable Long usuarioId) {
@@ -98,6 +109,7 @@ public class AsistenciaController {
     }
 
     @PatchMapping("/{id}/salida")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @asistenciaSecurityService.puedeGestionarAsistenciaPorId(#id, authentication))")
     @Operation(summary = "Marcar salida", description = "Registra la hora de salida de un asistente")
     public ResponseEntity<AsistenciaDto> marcarSalida(
             @Parameter(description = "ID de la asistencia") @PathVariable Long id) {
@@ -107,6 +119,7 @@ public class AsistenciaController {
     }
 
     @PostMapping("/multiple")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DIRIGENTE') and @asistenciaSecurityService.puedeGestionarMultiplesAsistencias(#asistenciasDto, authentication))")
     @Operation(summary = "Registrar múltiples asistencias")
     public ResponseEntity<List<AsistenciaDto>> registrarMultiplesAsistencias(
             @RequestBody List<AsistenciaDto> asistenciasDto) {

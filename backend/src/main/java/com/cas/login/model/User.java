@@ -50,8 +50,8 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PackingList packingList;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<com.campassistant.model.Assistance> assistanceRecords = new HashSet<>();
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<com.cas.asistencias.model.Asistencia> asistencias = new HashSet<>();
 
     // Relación para Dirigentes: Acampantes que supervisa un Dirigente
     @ManyToMany(fetch = FetchType.LAZY)
